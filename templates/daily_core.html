@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Fondations — LevelUp{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h2>Score du jour</h2>
+  <div class="stat-row">
+    <span class="label">Score</span>
+    <span>{{ score }} / 100 {% if validated %}<span class="badge good">VALIDÉE</span>{% endif %}</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" style="width: {{ score }}%"></div></div>
+</div>
+
+<div class="card">
+  <h2>Fondations du jour</h2>
+  {% if foundations %}
+    {% for f in foundations %}
+      <div class="list-item">
+        <span>{{ f.title }} <span class="muted">[{{ f.type }}] poids:{{ f.weight }}</span></span>
+        {% if f.status == 1 %}
+          <form class="inline" method="post" action="{{ url_for('daily_core.unvalidate', foundation_id=f.id) }}">
+            <button class="btn small secondary" type="submit">Annuler</button>
+          </form>
+        {% else %}
+          <form class="inline" method="post" action="{{ url_for('daily_core.validate', foundation_id=f.id) }}">
+            <button class="btn small" type="submit">Valider</button>
+          </form>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">Aucune fondation définie.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Nouvelle fondation</h2>
+  <form method="post" action="{{ url_for('daily_core.create') }}">
+    <label>Titre</label>
+    <input type="text" name="title" required>
+    <label>Type</label>
+    <select name="type">
+      {% for t in types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+    </select>
+    <label>Poids (1-10)</label>
+    <input type="number" name="weight" min="1" max="10" value="5" required>
+    <button class="btn" type="submit">Ajouter</button>
+  </form>
+</div>
+
+{% endblock %}

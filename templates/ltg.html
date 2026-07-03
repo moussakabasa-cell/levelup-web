@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Objectifs long terme — LevelUp{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h2>Objectifs long terme</h2>
+  {% if goals %}
+    {% for g in goals %}
+      <div class="list-item">
+        <a href="{{ url_for('ltg.detail', ltg_id=g.id) }}" style="color:inherit; text-decoration:none;">
+          {{ g.title }}
+          <span class="muted">
+            {{ g.sub_objectives|selectattr('checked')|list|length }}/{{ g.sub_objectives|length }} —
+            échéance {{ g.deadline }}
+          </span>
+        </a>
+        <span>
+          <span class="badge {{ 'good' if g.status == 3 else 'warn' if g.status == 2 else '' }}">{{ labels[g.status] }}</span>
+          <form class="inline" method="post" action="{{ url_for('ltg.delete', ltg_id=g.id) }}">
+            <button class="btn small secondary" type="submit">✕</button>
+          </form>
+        </span>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">Aucun objectif long terme.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Nouvel objectif</h2>
+  <form method="post" action="{{ url_for('ltg.create') }}">
+    <label>Titre</label>
+    <input type="text" name="title" required>
+    <label>Deadline</label>
+    <input type="date" name="deadline" required>
+    <button class="btn" type="submit">Ajouter</button>
+  </form>
+</div>
+
+{% endblock %}

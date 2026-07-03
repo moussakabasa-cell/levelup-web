@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Quêtes — LevelUp{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h2>Quêtes</h2>
+  {% if quests %}
+    {% for q in quests %}
+      <div class="list-item">
+        <span>
+          {{ q.title }}
+          <span class="muted">[{{ q.type }}]</span>
+          {% if q.status == 1 %}<span class="badge good">FAIT</span>{% endif %}
+        </span>
+        <span>
+          {% if q.status == 0 %}
+          <form class="inline" method="post" action="{{ url_for('quests.complete', quest_id=q.id) }}">
+            <button class="btn small" type="submit">Compléter</button>
+          </form>
+          {% endif %}
+          <form class="inline" method="post" action="{{ url_for('quests.delete', quest_id=q.id) }}">
+            <button class="btn small secondary" type="submit">✕</button>
+          </form>
+        </span>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">Aucune quête.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Nouvelle quête</h2>
+  <form method="post" action="{{ url_for('quests.create') }}">
+    <label>Titre</label>
+    <input type="text" name="title" required>
+    <label>Skill</label>
+    <select name="skill_id">
+      <option value="">— aucun —</option>
+      {% for s in skills %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+    </select>
+    <label>Type</label>
+    <select name="type">
+      {% for t in types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+    </select>
+    <button class="btn" type="submit">Ajouter</button>
+  </form>
+</div>
+
+{% endblock %}

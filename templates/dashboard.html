@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — LevelUp{% endblock %}
+{% block content %}
+
+{% if alerts %}
+  <div class="card">
+    <h2>Alertes</h2>
+    {% for a in alerts %}
+      <div class="alert-box">{{ a }}</div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="card">
+  <h2>État</h2>
+  <div class="stat-row"><span class="label">Streak</span><span>{{ player.streak }} jours</span></div>
+  <div class="stat-row"><span class="label">Fatigue</span><span>{{ player.fatigue }} / 100</span></div>
+  <div class="stat-row"><span class="label">Momentum</span><span>{{ player.momentum }}</span></div>
+  <div class="stat-row"><span class="label">Discipline (7j)</span><span>{{ discipline }} / 100</span></div>
+  <div class="stat-row">
+    <span class="label">Fondations</span>
+    <span>{{ daily_score }} / 100
+      {% if day_validated %}<span class="badge good">VALIDÉE</span>{% endif %}
+    </span>
+  </div>
+  <div class="stat-row"><span class="label">Score de vie</span><span>{{ life_score.global }} / 100</span></div>
+</div>
+
+<div class="card">
+  <h2>Profil</h2>
+  <div class="stat-row"><span class="label">Type</span><span>{{ profile.type }}</span></div>
+  <div class="stat-row"><span class="label">Skill dominant</span><span>{{ profile.dominant_skill or "aucun" }}</span></div>
+</div>
+
+{% if commitments %}
+<div class="card">
+  <h2>Engagements du jour</h2>
+  {% for c in commitments %}
+    <div class="list-item">
+      <span>{{ c.quest.title }}</span>
+      <span class="badge {{ 'good' if c.done else 'warn' }}">{{ 'OK' if c.done else 'À FAIRE' }}</span>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Quêtes recommandées</h2>
+  {% if recommended %}
+    {% for q in recommended %}
+      <div class="list-item">
+        <span>{{ q.title }} <span class="muted">[{{ q.type }}]</span></span>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">Aucune quête disponible.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

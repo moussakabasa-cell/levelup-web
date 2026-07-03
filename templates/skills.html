@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Skills — LevelUp{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h2>Skills</h2>
+  {% if skills %}
+    {% for s in skills %}
+      <div class="list-item">
+        <a href="{{ url_for('skills.milestones', skill_id=s.id) }}" style="color:inherit; text-decoration:none;">
+          {{ s.name }} <span class="muted">[{{ s.category }}] — {{ s.checked_milestone_count() }}/{{ s.milestone_count() }} jalons</span>
+        </a>
+        <form class="inline" method="post" action="{{ url_for('skills.delete', skill_id=s.id) }}">
+          <button class="btn small secondary" type="submit">✕</button>
+        </form>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">Aucun skill.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Nouveau skill</h2>
+  <form method="post" action="{{ url_for('skills.create') }}">
+    <label>Nom</label>
+    <input type="text" name="name" required>
+    <label>Catégorie</label>
+    <select name="category">
+      {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+    </select>
+    <button class="btn" type="submit">Ajouter</button>
+  </form>
+</div>
+
+{% endblock %}

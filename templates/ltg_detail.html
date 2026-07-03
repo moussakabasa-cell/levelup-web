@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ goal.title }} — Objectif{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h2>{{ goal.title }}</h2>
+  <div class="stat-row"><span class="label">Échéance</span><span>{{ goal.deadline }}</span></div>
+  <div class="stat-row"><span class="label">Statut</span><span>{{ labels[goal.status] }}</span></div>
+</div>
+
+<div class="card">
+  <h2>Sous-objectifs</h2>
+  {% if goal.sub_objectives %}
+    {% for s in goal.sub_objectives %}
+      <div class="list-item">
+        <span>{{ '☑' if s.checked else '☐' }} {{ s.title }}</span>
+        <span>
+          {% if s.checked %}
+            <form class="inline" method="post" action="{{ url_for('ltg.uncheck_sub', ltg_id=goal.id, sub_id=s.id) }}">
+              <button class="btn small secondary" type="submit">Décocher</button>
+            </form>
+          {% else %}
+            <form class="inline" method="post" action="{{ url_for('ltg.check_sub', ltg_id=goal.id, sub_id=s.id) }}">
+              <button class="btn small" type="submit">Cocher</button>
+            </form>
+          {% endif %}
+          <form class="inline" method="post" action="{{ url_for('ltg.delete_sub', ltg_id=goal.id, sub_id=s.id) }}">
+            <button class="btn small secondary" type="submit">✕</button>
+          </form>
+        </span>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">Aucun sous-objectif.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Nouveau sous-objectif</h2>
+  <form method="post" action="{{ url_for('ltg.add_sub', ltg_id=goal.id) }}">
+    <label>Titre</label>
+    <input type="text" name="title" required>
+    <button class="btn" type="submit">Ajouter</button>
+  </form>
+</div>
+
+<a href="{{ url_for('ltg.index') }}" class="muted">← retour aux objectifs</a>
+
+{% endblock %}

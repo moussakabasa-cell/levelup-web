@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{% block title %}LevelUp{% endblock %}</title>
+<style>
+  :root {
+    --bg: #14181c;
+    --panel: #1c2127;
+    --panel-border: #2a3038;
+    --text: #e4e7eb;
+    --text-dim: #8b939e;
+    --accent: #c9a227;      /* or discipline — la seule couleur "chaude" du système */
+    --good: #4a8a7e;        /* validé / positif */
+    --warn: #b5533c;        /* alerte, sobre, pas criard */
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    --sans: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    padding-bottom: 72px;
+  }
+  header.top {
+    padding: 20px 16px 12px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  header.top .brand {
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  header.top .brand strong { color: var(--accent); }
+  main { padding: 16px; max-width: 640px; margin: 0 auto; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--panel-border);
+    font-family: var(--mono);
+    font-size: 15px;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .label { color: var(--text-dim); font-family: var(--sans); font-size: 14px; }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-family: var(--mono);
+  }
+  .badge.good { background: rgba(74,138,126,0.18); color: var(--good); }
+  .badge.warn { background: rgba(181,83,60,0.18); color: var(--warn); }
+  .alert-box {
+    border-left: 3px solid var(--warn);
+    background: rgba(181,83,60,0.08);
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    border-radius: 0 6px 6px 0;
+  }
+  .btn {
+    display: inline-block;
+    background: var(--accent);
+    color: #14181c;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+  }
+  .btn.secondary {
+    background: transparent;
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+  }
+  .btn.small { padding: 6px 12px; font-size: 13px; }
+  form.inline { display: inline; }
+  input, select {
+    background: var(--bg);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 15px;
+    width: 100%;
+    margin-bottom: 10px;
+    font-family: var(--sans);
+  }
+  label { font-size: 13px; color: var(--text-dim); display: block; margin-bottom: 4px; }
+  .list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  .list-item:last-child { border-bottom: none; }
+  .progress-track {
+    height: 6px;
+    background: var(--panel-border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .progress-fill { height: 100%; background: var(--accent); }
+  nav.bottom {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    background: var(--panel);
+    border-top: 1px solid var(--panel-border);
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  }
+  nav.bottom a {
+    flex: 1;
+    text-align: center;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  nav.bottom a.active { color: var(--accent); }
+  .muted { color: var(--text-dim); font-size: 13px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><strong>LEVEL</strong>UP — tracker la réalité, pas simuler un jeu</div>
+</header>
+<main>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for m in messages %}<div class="alert-box">{{ m }}</div>{% endfor %}
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<nav class="bottom">
+  <a href="{{ url_for('dashboard.index') }}" class="{{ 'active' if active=='dashboard' }}">Dashboard</a>
+  <a href="{{ url_for('daily_core.index') }}" class="{{ 'active' if active=='daily_core' }}">Fondations</a>
+  <a href="{{ url_for('quests.index') }}" class="{{ 'active' if active=='quests' }}">Quêtes</a>
+  <a href="{{ url_for('skills.index') }}" class="{{ 'active' if active=='skills' }}">Skills</a>
+  <a href="{{ url_for('ltg.index') }}" class="{{ 'active' if active=='ltg' }}">Objectifs</a>
+</nav>
+</body>
+</html>

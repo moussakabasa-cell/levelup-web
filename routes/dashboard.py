@@ -1,9 +1,8 @@
 from flask import Blueprint, render_template
 
-from models import Player, Foundation
+from models import Player, Foundation, Quest
 from core import daily_core, life_score, profiling, alerts as alerts_core, recommendation
 from core.queries import get_discipline_score_7days, quest_completed_today
-from models import Quest
 
 bp = Blueprint("dashboard", __name__)
 

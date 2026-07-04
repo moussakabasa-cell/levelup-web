@@ -10,15 +10,13 @@ def create_app():
     db.init_app(app)
 
     from routes.dashboard import bp as dashboard_bp
-    from routes.skills import bp as skills_bp
     from routes.quests import bp as quests_bp
-    from routes.ltg import bp as ltg_bp
+    from routes.parcours import bp as parcours_bp
     from routes.daily_core import bp as daily_core_bp
 
     app.register_blueprint(dashboard_bp)
-    app.register_blueprint(skills_bp)
     app.register_blueprint(quests_bp)
-    app.register_blueprint(ltg_bp)
+    app.register_blueprint(parcours_bp)
     app.register_blueprint(daily_core_bp)
 
     with app.app_context():

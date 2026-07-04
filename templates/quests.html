@@ -10,6 +10,7 @@
         <span>
           {{ q.title }}
           <span class="muted">[{{ q.type }}]</span>
+          {% if q.jalon %}<span class="muted">→ {{ q.jalon.title }}</span>{% endif %}
           {% if q.status == 1 %}<span class="badge good">FAIT</span>{% endif %}
         </span>
         <span>
@@ -18,7 +19,7 @@
             <button class="btn small" type="submit">Compléter</button>
           </form>
           {% endif %}
-          <form class="inline" method="post" action="{{ url_for('quests.delete', quest_id=q.id) }}">
+          <form class="inline confirm-delete" method="post" action="{{ url_for('quests.delete', quest_id=q.id) }}">
             <button class="btn small secondary" type="submit">✕</button>
           </form>
         </span>
@@ -34,10 +35,14 @@
   <form method="post" action="{{ url_for('quests.create') }}">
     <label>Titre</label>
     <input type="text" name="title" required>
-    <label>Skill</label>
-    <select name="skill_id">
+    <label>Jalon lié (optionnel)</label>
+    <select name="jalon_id">
       <option value="">— aucun —</option>
-      {% for s in skills %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+      {% for p in parcours_list %}
+        {% for j in p.jalons %}
+          <option value="{{ j.id }}">{{ p.title }} → {{ j.title }}{{ ' (déjà coché)' if j.checked else '' }}</option>
+        {% endfor %}
+      {% endfor %}
     </select>
     <label>Type</label>
     <select name="type">

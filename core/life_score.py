@@ -1,27 +1,21 @@
 """
-Port de life_score.c.
-
-Pondération RÉELLE (celle du calcul, pas celle du commentaire du code C
-qui dit 35/30/20/15 mais calcule en fait avec ces coefficients) :
-    academique 30% + projet 25% + perso 15% + humain 10% + daily_core 20%
-
-category_score : proxy = jalons cochés / catégorie, moyenne par skill,
-plafonné à 100 (20 jalons cochés en moyenne = 100).
+Score de vie — basé sur les Parcours ayant une catégorie renseignée
+(peu importe la deadline).
+Pondération : académique 30% + projet 25% + perso 15% + humain 10% + fondations 20%
 """
-from models import Skill
+from models import Parcours
 from core import daily_core
 
 
 def _category_score(category: str) -> int:
-    skills = Skill.query.filter_by(category=category).all()
-    if not skills:
+    items = Parcours.query.filter_by(category=category).all()
+    if not items:
         return 0
 
-    total_checked = sum(s.checked_milestone_count() for s in skills)
-    avg = total_checked // len(skills)
+    total_checked = sum(p.checked_jalon_count() for p in items)
+    avg = total_checked // len(items)
 
-    score = (avg * 100) // 20
-    return min(score, 100)
+    return min((avg * 100) // 20, 100)
 
 
 def calculate() -> dict:
@@ -42,15 +36,3 @@ def calculate() -> dict:
         "perso": perso,
         "humain": humain,
     }
-
-
-def weakest_category(scores: dict) -> tuple[str, int]:
-    """Retourne (nom, score) de la catégorie la plus faible, pour l'alerte déséquilibre."""
-    cats = {
-        "Academique": scores["academique"],
-        "Projet": scores["projet"],
-        "Perso": scores["perso"],
-        "Humain": scores["humain"],
-    }
-    name = min(cats, key=cats.get)
-    return name, cats[name]

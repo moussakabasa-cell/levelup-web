@@ -92,3 +92,10 @@ def create_foundation(title: str, ftype: str, weight: int) -> Foundation:
     db.session.add(f)
     db.session.commit()
     return f
+
+
+def delete_foundation(foundation_id: int):
+    f = Foundation.query.get(foundation_id)
+    if f:
+        db.session.delete(f)
+        db.session.commit()

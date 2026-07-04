@@ -1,60 +1,87 @@
 """
-Modèles SQLAlchemy — schéma identique à skills.db (vérifié colonne par colonne
-sur ta base réelle, pas sur la doc).
+Modèles SQLAlchemy — schéma UNIFIÉ (v2) suite au retour d'expérience de Moks.
 
-Tables ACTIVES (utilisées par le moteur C actuel, portées avec la logique) :
-    Skill, SkillMilestone, Quest, QuestCompletion, Player, TimeSystem,
-    LongTermGoal, LtgSubObjective, Foundation
+Changement structurel majeur vs v1 :
+    Skill + SkillMilestone + LongTermGoal + LtgSubObjective
+    -> fusionnés en Parcours + Jalon (un seul système à jalons,
+       avec une deadline optionnelle : null = compétence infinie type
+       "skill" d'origine, remplie = projet borné type "LTG" d'origine)
 
-Tables LEGACY (présentes dans skills.db, plus utilisées par le moteur
-depuis le pivot Phase 9 — reliquats du système XP/niveaux/synergies) :
+    Quest.skill_id -> Quest.jalon_id (une quête pointe vers UN jalon
+    précis, pas vers tout un skill — plus de granularité, plus de sens)
+
+    "Parcours" plutôt que "Objectif" : le mot "objectif" suggère une fin,
+    alors que le modèle couvre aussi des compétences sans fin (anglais,
+    spiritualité...). "Parcours" reste neutre, avec ou sans deadline.
+
+Tables LEGACY (résidu pré-pivot Phase 9, toujours non utilisées) :
     Rules, XpHistory, Synergy, Goal
-Elles sont modélisées pour que ta DB existante s'importe sans erreur,
-mais aucune route/logique n'écrit dedans.
 """
 from datetime import date
 from extensions import db
 
 
 # ============================================================
-#   ACTIF — SKILLS & JALONS
+#   OBJECTIF + JALON (fusion Skill/LTG)
 # ============================================================
 
-class Skill(db.Model):
-    __tablename__ = "skills"
+class Parcours(db.Model):
+    __tablename__ = "parcours"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.Text)
-    level = db.Column(db.Integer)      # legacy, plus utilisé (résidu pré-pivot)
-    xp = db.Column(db.Integer)         # legacy, plus utilisé (résidu pré-pivot)
-    category = db.Column(db.Text)      # ACADEMIQUE / PROJET / PERSO / HUMAIN
+    title = db.Column(db.Text, nullable=False)
+    description = db.Column(db.Text)
+    deadline = db.Column(db.Text)          # YYYY-MM-DD, NULL = pas de deadline (compétence infinie)
+    category = db.Column(db.Text)          # ACADEMIQUE/PROJET/PERSO/HUMAIN, optionnelle
+    status = db.Column(db.Integer, default=4)   # voir constantes ci-dessous, pertinent seulement si deadline non-null
 
-    milestones = db.relationship(
-        "SkillMilestone", backref="skill", cascade="all, delete-orphan"
+    jalons = db.relationship(
+        "Jalon", backref="parcours", cascade="all, delete-orphan",
+        order_by="Jalon.id",
     )
-    quests = db.relationship("Quest", backref="skill")
 
     CATEGORIES = ["ACADEMIQUE", "PROJET", "PERSO", "HUMAIN"]
 
-    def milestone_count(self):
-        return len(self.milestones)
+    # Statuts (mêmes valeurs que l'ancien LtgStatus, gardées pour compat)
+    EN_AVANCE = 0
+    DANS_LES_TEMPS = 1
+    EN_RETARD = 2
+    COMPLETE = 3
+    INCONNU = 4
 
-    def checked_milestone_count(self):
-        return sum(1 for m in self.milestones if m.checked)
+    STATUS_LABELS = {
+        EN_AVANCE: "EN AVANCE",
+        DANS_LES_TEMPS: "DANS LES TEMPS",
+        EN_RETARD: "EN RETARD",
+        COMPLETE: "COMPLETE",
+        INCONNU: "EN COURS",
+    }
+
+    def is_perpetual(self) -> bool:
+        """True si pas de deadline — équivalent d'un ancien 'skill'."""
+        return not self.deadline
+
+    def jalon_count(self):
+        return len(self.jalons)
+
+    def checked_jalon_count(self):
+        return sum(1 for j in self.jalons if j.checked)
 
 
-class SkillMilestone(db.Model):
-    __tablename__ = "skill_milestones"
+class Jalon(db.Model):
+    __tablename__ = "jalons"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    skill_id = db.Column(db.Integer, db.ForeignKey("skills.id"))
-    title = db.Column(db.Text)
+    parcours_id = db.Column(db.Integer, db.ForeignKey("parcours.id"), nullable=False)
+    title = db.Column(db.Text, nullable=False)
     checked = db.Column(db.Integer, default=0)
     checked_date = db.Column(db.Text, default="")
 
+    quests = db.relationship("Quest", backref="jalon")
+
 
 # ============================================================
-#   ACTIF — QUÊTES
+#   QUÊTES
 # ============================================================
 
 class Quest(db.Model):
@@ -62,7 +89,7 @@ class Quest(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.Text)
-    skill_id = db.Column(db.Integer, db.ForeignKey("skills.id"))
+    jalon_id = db.Column(db.Integer, db.ForeignKey("jalons.id"))   # optionnel
     type = db.Column(db.Text)          # DAILY / PONCTUELLE
     status = db.Column(db.Integer, default=0)   # 0=AVAILABLE, 1=COMPLETED
     last_completed = db.Column(db.Text, default="NEVER")
@@ -73,19 +100,19 @@ class Quest(db.Model):
 
 
 class QuestCompletion(db.Model):
-    """Source de vérité pour les analytics (quest_completions).
-    C'est CETTE table, pas le champ quests.status, qui alimente
-    discipline score, dérive, quêtes de la semaine, etc."""
+    """Source de vérité pour les analytics — jalon_id dénormalisé au
+    moment de la complétion (pas de FK stricte : garde l'historique même
+    si le jalon est supprimé ensuite)."""
     __tablename__ = "quest_completions"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     quest_id = db.Column(db.Integer)
-    skill_id = db.Column(db.Integer)
+    jalon_id = db.Column(db.Integer)
     completed_date = db.Column(db.Text)   # YYYY-MM-DD
 
 
 # ============================================================
-#   ACTIF — PLAYER (état global, ligne unique id=1)
+#   PLAYER (état global, ligne unique id=1)
 # ============================================================
 
 class Player(db.Model):
@@ -102,7 +129,6 @@ class Player(db.Model):
 
     @staticmethod
     def get():
-        """Équivalent load_player — retourne la ligne id=1, la crée si absente."""
         player = Player.query.get(1)
         if player is None:
             player = Player(
@@ -115,7 +141,7 @@ class Player(db.Model):
 
 
 # ============================================================
-#   ACTIF — TIME SYSTEM (ligne unique id=1)
+#   TIME SYSTEM (ligne unique id=1)
 # ============================================================
 
 class TimeSystem(db.Model):
@@ -141,51 +167,7 @@ class TimeSystem(db.Model):
 
 
 # ============================================================
-#   ACTIF — OBJECTIFS LONG TERME
-# ============================================================
-
-class LongTermGoal(db.Model):
-    __tablename__ = "long_term_goals"
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    title = db.Column(db.Text)
-    skill_id = db.Column(db.Integer)       # colonne présente en DB, jamais peuplée par le C actuel
-    target_level = db.Column(db.Integer)   # idem — résidu de schéma, pas utilisé
-    deadline = db.Column(db.Text)          # YYYY-MM-DD
-    status = db.Column(db.Integer)         # voir LtgStatus ci-dessous
-
-    sub_objectives = db.relationship(
-        "LtgSubObjective", backref="ltg", cascade="all, delete-orphan"
-    )
-
-    # Statuts — mêmes valeurs que l'enum C LtgStatus
-    EN_AVANCE = 0
-    DANS_LES_TEMPS = 1
-    EN_RETARD = 2
-    COMPLETE = 3
-    INCONNU = 4
-
-    STATUS_LABELS = {
-        EN_AVANCE: "EN AVANCE",
-        DANS_LES_TEMPS: "DANS LES TEMPS",
-        EN_RETARD: "EN RETARD",
-        COMPLETE: "COMPLETE",
-        INCONNU: "INCONNU",
-    }
-
-
-class LtgSubObjective(db.Model):
-    __tablename__ = "ltg_sub_objectives"
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    ltg_id = db.Column(db.Integer, db.ForeignKey("long_term_goals.id"))
-    title = db.Column(db.Text)
-    checked = db.Column(db.Integer, default=0)
-    checked_date = db.Column(db.Text, default="")
-
-
-# ============================================================
-#   ACTIF — DAILY CORE (fondations)
+#   DAILY CORE (fondations)
 # ============================================================
 
 class Foundation(db.Model):
@@ -193,9 +175,9 @@ class Foundation(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.Text)
-    type = db.Column(db.Text)      # SANTE / MENTAL / SPIRITUEL / TRAVAIL / SOCIAL
-    weight = db.Column(db.Integer)         # 1-10
-    status = db.Column(db.Integer, default=0)  # 0=PENDING, 1=DONE, 2=SKIPPED
+    type = db.Column(db.Text)
+    weight = db.Column(db.Integer)
+    status = db.Column(db.Integer, default=0)
     last_done = db.Column(db.Text, default="")
 
     TYPES = ["SANTE", "MENTAL", "SPIRITUEL", "TRAVAIL", "SOCIAL"]
@@ -205,12 +187,11 @@ class Foundation(db.Model):
 
 
 # ============================================================
-#   LEGACY — présent dans le schéma, non utilisé par le moteur
+#   LEGACY — non utilisé par le moteur, gardé pour compat schéma
 # ============================================================
 
 class Rules(db.Model):
     __tablename__ = "rules"
-
     id = db.Column(db.Integer, primary_key=True)
     streak_bonus_3 = db.Column(db.Integer)
     streak_bonus_6 = db.Column(db.Integer)
@@ -226,7 +207,6 @@ class Rules(db.Model):
 
 class XpHistory(db.Model):
     __tablename__ = "xp_history"
-
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     skill_id = db.Column(db.Integer)
     quest_id = db.Column(db.Integer)
@@ -236,7 +216,6 @@ class XpHistory(db.Model):
 
 class Synergy(db.Model):
     __tablename__ = "synergies"
-
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     source_skill_id = db.Column(db.Integer)
     target_skill_id = db.Column(db.Integer)
@@ -246,7 +225,6 @@ class Synergy(db.Model):
 
 class Goal(db.Model):
     __tablename__ = "goals"
-
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.Text)
     description = db.Column(db.Text)
@@ -257,5 +235,4 @@ class Goal(db.Model):
 
 
 def today_str() -> str:
-    """Équivalent de strftime('%Y-%m-%d') utilisé partout côté C."""
     return date.today().isoformat()

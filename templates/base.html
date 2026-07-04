@@ -164,8 +164,17 @@
   <a href="{{ url_for('dashboard.index') }}" class="{{ 'active' if active=='dashboard' }}">Dashboard</a>
   <a href="{{ url_for('daily_core.index') }}" class="{{ 'active' if active=='daily_core' }}">Fondations</a>
   <a href="{{ url_for('quests.index') }}" class="{{ 'active' if active=='quests' }}">Quêtes</a>
-  <a href="{{ url_for('skills.index') }}" class="{{ 'active' if active=='skills' }}">Skills</a>
-  <a href="{{ url_for('ltg.index') }}" class="{{ 'active' if active=='ltg' }}">Objectifs</a>
+  <a href="{{ url_for('parcours.index') }}" class="{{ 'active' if active=='parcours' }}">Parcours</a>
 </nav>
+<script>
+document.addEventListener('submit', function(e) {
+  const form = e.target;
+  if (form.classList.contains('confirm-delete')) {
+    if (!confirm('Es-tu sûr de vouloir supprimer ça ? Cette action est définitive.')) {
+      e.preventDefault();
+    }
+  }
+});
+</script>
 </body>
 </html>

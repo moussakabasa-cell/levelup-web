@@ -43,3 +43,9 @@ def create():
         flash(str(e))
 
     return redirect(url_for("daily_core.index"))
+
+
+@bp.route("/supprimer/<int:foundation_id>", methods=["POST"])
+def delete(foundation_id):
+    daily_core.delete_foundation(foundation_id)
+    return redirect(url_for("daily_core.index"))

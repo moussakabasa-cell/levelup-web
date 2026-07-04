@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Parcours — LevelUp{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h2>Parcours avec deadline</h2>
+  {% if bornes %}
+    {% for p in bornes %}
+      <div class="list-item">
+        <a href="{{ url_for('parcours.detail', parcours_id=p.id) }}" style="color:inherit; text-decoration:none;">
+          {{ p.title }}
+          <span class="muted">{{ p.checked_jalon_count() }}/{{ p.jalon_count() }} — échéance {{ p.deadline }}</span>
+        </a>
+        <span>
+          <span class="badge {{ 'good' if p.status == 3 else 'warn' if p.status == 2 else '' }}">{{ labels[p.status] }}</span>
+          <form class="inline confirm-delete" method="post" action="{{ url_for('parcours.delete', parcours_id=p.id) }}">
+            <button class="btn small secondary" type="submit">✕</button>
+          </form>
+        </span>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">Aucun parcours avec deadline.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Parcours sans deadline (compétences continues)</h2>
+  {% if perpetuels %}
+    {% for p in perpetuels %}
+      <div class="list-item">
+        <a href="{{ url_for('parcours.detail', parcours_id=p.id) }}" style="color:inherit; text-decoration:none;">
+          {{ p.title }}
+          <span class="muted">[{{ p.category or '—' }}] {{ p.checked_jalon_count() }}/{{ p.jalon_count() }} jalons</span>
+        </a>
+        <form class="inline confirm-delete" method="post" action="{{ url_for('parcours.delete', parcours_id=p.id) }}">
+          <button class="btn small secondary" type="submit">✕</button>
+        </form>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">Aucun parcours sans deadline.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Nouveau parcours</h2>
+  <form method="post" action="{{ url_for('parcours.create') }}">
+    <label>Titre</label>
+    <input type="text" name="title" required>
+    <label>Deadline (laisser vide = compétence continue, sans fin)</label>
+    <input type="date" name="deadline">
+    <label>Catégorie (optionnelle)</label>
+    <select name="category">
+      <option value="">— aucune —</option>
+      {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+    </select>
+    <button class="btn" type="submit">Ajouter</button>
+  </form>
+</div>
+
+{% endblock %}

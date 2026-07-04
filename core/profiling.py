@@ -1,6 +1,6 @@
-"""Port de profiling_system.c."""
-from models import Skill, Player
-from core.queries import get_skill_quests_this_week
+"""Profil joueur — dominant = parcours avec le plus de complétions cette semaine."""
+from models import Parcours, Player
+from core.queries import get_parcours_quests_this_week
 
 IRREGULAR = "IRREGULIER"
 SYSTEMS = "DOMINANCE SYSTEMES"
@@ -9,9 +9,8 @@ BALANCED = "EQUILIBRE"
 
 def generate_profile() -> dict:
     player = Player.get()
-    skills = Skill.query.all()
+    items = Parcours.query.all()
 
-    # régularité basée sur le streak
     if player.streak >= 7:
         regularity_score = 3
     elif player.streak >= 3:
@@ -19,29 +18,27 @@ def generate_profile() -> dict:
     else:
         regularity_score = 1
 
-    # skill dominant = plus de complétions cette semaine
-    dominant_skill = None
+    dominant = None
     max_count = 0
-    for s in skills:
-        count = get_skill_quests_this_week(s.id)
+    for p in items:
+        count = get_parcours_quests_this_week(p.id)
         if count > max_count:
             max_count = count
-            dominant_skill = s.name
+            dominant = p.title
 
-    # stagnation : un seul skill actif alors qu'il y en a plusieurs
-    active_skills = sum(1 for s in skills if get_skill_quests_this_week(s.id) > 0)
-    stagnation_detected = active_skills == 1 and len(skills) > 1
+    active = sum(1 for p in items if get_parcours_quests_this_week(p.id) > 0)
+    stagnation_detected = active == 1 and len(items) > 1
 
     if regularity_score == 1:
         profile_type = IRREGULAR
-    elif active_skills <= 1:
+    elif active <= 1:
         profile_type = SYSTEMS
     else:
         profile_type = BALANCED
 
     return {
         "type": profile_type,
-        "dominant_skill": dominant_skill,
+        "dominant_parcours": dominant,
         "regularity_score": regularity_score,
         "fatigue_level": player.fatigue,
         "stagnation_detected": stagnation_detected,

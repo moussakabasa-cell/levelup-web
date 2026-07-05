@@ -22,3 +22,9 @@ class Config:
 
     # Fuseau horaire pour le reset quotidien (minuit local, pas minuit UTC)
     TIMEZONE = os.environ.get("TZ", "Europe/Paris")
+    
+    # Protection d'accès (basic auth) — à définir sur Railway (variables
+    # APP_USERNAME / APP_PASSWORD). Valeurs par défaut uniquement pour le
+    # dev local ; change-les en prod.
+    APP_USERNAME = os.environ.get("APP_USERNAME", "moks")
+    APP_PASSWORD = os.environ.get("APP_PASSWORD", "changeme")

@@ -1,4 +1,5 @@
-from flask import Flask
+import secrets
+from flask import Flask, request, Response
 from config import Config
 from extensions import db
 
@@ -6,6 +7,21 @@ from extensions import db
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    def check_auth(username, password):
+        return (
+            secrets.compare_digest(username, app.config["APP_USERNAME"])
+            and secrets.compare_digest(password, app.config["APP_PASSWORD"])
+        )
+
+    @app.before_request
+    def require_auth():
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return Response(
+                "Accès restreint.", 401,
+                {"WWW-Authenticate": 'Basic realm="LevelUp"'},
+            )
 
     db.init_app(app)
 
@@ -22,8 +38,6 @@ def create_app():
     app.register_blueprint(analytics_bp)
 
     with app.app_context():
-        # Crée les tables manquantes seulement — ne touche pas aux données
-        # existantes si tu importes ton skills.db actuel.
         db.create_all()
 
     from scheduler import init_scheduler

@@ -20,7 +20,7 @@
   </div>
   <p class="muted" style="margin-top:6px;">{{ p.checked_jalon_count() }}/{{ p.jalon_count() }} jalons cochés</p>
   {% if p.jalon_count() > 0 and p.checked_jalon_count() == p.jalon_count() %}
-    <div class="alert-box" style="border-left-color: var(--good); background: rgba(74,138,126,0.1);">
+    <div class="alert-box" style="border-left-color: var(--stamp); background: rgba(184,135,58,0.1);">
       🎉 Tous les jalons sont cochés — parcours complété !
     </div>
   {% endif %}
@@ -32,7 +32,7 @@
     {% for j in p.jalons %}
       <div class="list-item" style="flex-direction: column; align-items: stretch;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span>{{ '☑' if j.checked else '☐' }} {{ j.title }}</span>
+          <span><span class="jalon-check {{ 'checked' if j.checked }}">{{ '✓' if j.checked }}</span>{{ j.title }}</span>
           <span>
             {% if j.checked %}
               <form class="inline" method="post" action="{{ url_for('parcours.uncheck_jalon', parcours_id=p.id, jalon_id=j.id) }}">
@@ -69,7 +69,7 @@
       </div>
     {% endfor %}
   {% else %}
-    <p class="muted">Aucun jalon.</p>
+    <div class="empty-state">Pas encore de jalon ici. Ajoute la première étape concrète qui montrera que ce parcours avance.</div>
   {% endif %}
 </div>
 

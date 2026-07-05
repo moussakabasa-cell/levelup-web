@@ -4,20 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{% block title %}LevelUp{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #14181c;
-    --panel: #1c2127;
-    --panel-border: #2a3038;
+    --bg: #14161a;
+    --panel: #1b1e23;
+    --panel-border: #2a2e35;
     --text: #e4e7eb;
     --text-dim: #8b939e;
-    --accent: #c9a227;      /* or discipline — la seule couleur "chaude" du système */
-    --good: #4a8a7e;        /* validé / positif */
-    --warn: #b5533c;        /* alerte, sobre, pas criard */
+    --stamp: #b8873a;       /* réservé exclusivement au coché/validé/progression réelle */
+    --action: #5b6f82;      /* boutons normaux, navigation — jamais le sens "validé" */
+    --warn: #b5533c;
     --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
     --sans: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+    --serif: "Fraunces", Georgia, serif;
   }
   * { box-sizing: border-box; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
   body {
     margin: 0;
     background: var(--bg);
@@ -26,40 +33,55 @@
     padding-bottom: 72px;
   }
   header.top {
-    padding: 20px 16px 12px;
+    padding: 22px 16px 14px;
     border-bottom: 1px solid var(--panel-border);
   }
   header.top .brand {
-    font-size: 13px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-family: var(--serif);
+    font-size: 15px;
+    letter-spacing: 0.04em;
     color: var(--text-dim);
+    font-weight: 500;
   }
-  header.top .brand strong { color: var(--accent); }
+  header.top .brand strong { color: var(--stamp); font-weight: 600; }
   main { padding: 16px; max-width: 640px; margin: 0 auto; }
+
+  @keyframes settleIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   .card {
     background: var(--panel);
     border: 1px solid var(--panel-border);
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 16px;
     margin-bottom: 14px;
+    animation: settleIn 0.35s ease-out backwards;
   }
+  .card:nth-of-type(1) { animation-delay: 0s; }
+  .card:nth-of-type(2) { animation-delay: 0.04s; }
+  .card:nth-of-type(3) { animation-delay: 0.08s; }
+  .card:nth-of-type(4) { animation-delay: 0.12s; }
+  .card:nth-of-type(5) { animation-delay: 0.16s; }
   .card h2 {
     margin: 0 0 12px;
-    font-size: 14px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-dim);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--panel-border);
+    font-family: var(--serif);
+    font-size: 16px;
     font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--text);
   }
   .stat-row {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--panel-border);
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--panel-border);
     font-family: var(--mono);
     font-size: 15px;
+    transition: background 0.15s ease;
   }
   .stat-row:last-child { border-bottom: none; }
   .stat-row .label { color: var(--text-dim); font-family: var(--sans); font-size: 14px; }
@@ -67,10 +89,10 @@
     display: inline-block;
     font-size: 11px;
     padding: 2px 8px;
-    border-radius: 20px;
+    border-radius: 3px;
     font-family: var(--mono);
   }
-  .badge.good { background: rgba(74,138,126,0.18); color: var(--good); }
+  .badge.good { background: rgba(184,135,58,0.16); color: var(--stamp); }
   .badge.warn { background: rgba(181,83,60,0.18); color: var(--warn); }
   .alert-box {
     border-left: 3px solid var(--warn);
@@ -82,21 +104,25 @@
   }
   .btn {
     display: inline-block;
-    background: var(--accent);
-    color: #14181c;
+    background: var(--action);
+    color: #eef1f4;
     font-weight: 600;
     padding: 10px 16px;
-    border-radius: 8px;
+    border-radius: 6px;
     text-decoration: none;
     font-size: 14px;
     border: none;
     cursor: pointer;
+    transition: filter 0.15s ease, transform 0.1s ease;
   }
+  .btn:hover { filter: brightness(1.12); }
+  .btn:active { transform: scale(0.97); }
   .btn.secondary {
     background: transparent;
     border: 1px solid var(--panel-border);
-    color: var(--text);
+    color: var(--text-dim);
   }
+  .btn.secondary:hover { border-color: var(--text-dim); color: var(--text); }
   .btn.small { padding: 6px 12px; font-size: 13px; }
   form.inline { display: inline; }
   input, select {
@@ -109,14 +135,16 @@
     width: 100%;
     margin-bottom: 10px;
     font-family: var(--sans);
+    transition: border-color 0.15s ease;
   }
+  input:focus, select:focus { outline: none; border-color: var(--action); }
   label { font-size: 13px; color: var(--text-dim); display: block; margin-bottom: 4px; }
   .list-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 0;
-    border-bottom: 1px solid var(--panel-border);
+    border-bottom: 1px dashed var(--panel-border);
   }
   .list-item:last-child { border-bottom: none; }
   .progress-track {
@@ -126,7 +154,40 @@
     overflow: hidden;
     margin-top: 6px;
   }
-  .progress-fill { height: 100%; background: var(--accent); }
+  .progress-fill { height: 100%; background: var(--stamp); transition: width 0.4s ease; }
+
+  /* case à cocher façon formulaire papier — le jalon, élément signature */
+  .jalon-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--text-dim);
+    border-radius: 3px;
+    margin-right: 8px;
+    font-family: var(--mono);
+    font-size: 13px;
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+  .jalon-check.checked {
+    border-color: var(--stamp);
+    background: rgba(184,135,58,0.14);
+    color: var(--stamp);
+    font-weight: 700;
+  }
+
+  .empty-state {
+    border: 1px dashed var(--panel-border);
+    border-radius: 6px;
+    padding: 18px 14px;
+    color: var(--text-dim);
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
   nav.bottom {
     position: fixed;
     bottom: 0; left: 0; right: 0;
@@ -143,8 +204,9 @@
     font-size: 11px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    transition: color 0.15s ease;
   }
-  nav.bottom a.active { color: var(--accent); }
+  nav.bottom a.active { color: var(--action); font-weight: 600; }
   .muted { color: var(--text-dim); font-size: 13px; }
 </style>
 </head>
@@ -165,7 +227,8 @@
   <a href="{{ url_for('daily_core.index') }}" class="{{ 'active' if active=='daily_core' }}">Fondations</a>
   <a href="{{ url_for('quests.index') }}" class="{{ 'active' if active=='quests' }}">Quêtes</a>
   <a href="{{ url_for('parcours.index') }}" class="{{ 'active' if active=='parcours' }}">Parcours</a>
-  <a href="{{ url_for('analytics.index') }}" class="{{ 'active' if active=='analytics' }}">Analytics</a></nav>
+  <a href="{{ url_for('analytics.index') }}" class="{{ 'active' if active=='analytics' }}">Analytics</a>
+</nav>
 <script>
 document.addEventListener('submit', function(e) {
   const form = e.target;

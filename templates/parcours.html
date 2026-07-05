@@ -20,8 +20,7 @@
       </div>
     {% endfor %}
   {% else %}
-    <p class="muted">Aucun parcours avec deadline.</p>
-  {% endif %}
+<div class="empty-state">Aucun projet borné pour l'instant. Ajoutes-en un avec une deadline réelle.</div>  {% endif %}
 </div>
 
 <div class="card">
@@ -39,7 +38,7 @@
       </div>
     {% endfor %}
   {% else %}
-    <p class="muted">Aucun parcours sans deadline.</p>
+    <div class="empty-state">Aucune compétence continue pour l'instant. Ajoutes-en une — sans deadline, pour ce qui ne se termine jamais vraiment.</div>
   {% endif %}
 </div>
 

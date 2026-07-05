@@ -12,6 +12,21 @@
 {% endif %}
 
 <div class="card">
+  <details>
+    <summary style="cursor:pointer; font-size:14px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-dim); font-weight:600;">
+      Comment ça marche ?
+    </summary>
+    <div style="margin-top:14px; font-size:14px; line-height:1.6;">
+      <p><strong style="color:var(--accent);">Fondations</strong> — tes non-négociables du jour (prière, sommeil, sport...). Se remettent à zéro chaque nuit. Elles mesurent la stabilité de ta journée, pas une progression.</p>
+      <p><strong style="color:var(--accent);">Quêtes</strong> — des actions concrètes. DAILY se répètent chaque jour, PONCTUELLE sont ponctuelles (avec lieu/deadline si besoin). Une quête peut être liée à un jalon précis.</p>
+      <p><strong style="color:var(--accent);">Parcours</strong> — un domaine que tu suis dans la durée : avec deadline (un projet borné, ex. "Valider L2") ou sans (une compétence continue, ex. "Anglais"). Chaque parcours contient des <strong style="color:var(--accent);">jalons</strong> — des étapes concrètes que tu coches toi-même, jamais automatiquement.</p>
+      <p>Compléter une quête liée à un jalon ne le coche pas tout seul — l'app te dit juste "tu progresses vers ce jalon", et c'est toi qui décides si c'est vraiment acquis. C'est ce qui distingue ce système d'un simple tracker d'XP : la validation reste consciente.</p>
+      <p><strong style="color:var(--accent);">Analytics</strong> — regarde en arrière : jours actifs, jalons cochés dans le temps, évolution de ta discipline.</p>
+    </div>
+  </details>
+</div>
+
+<div class="card">
   <h2>État</h2>
   <div class="stat-row"><span class="label">Streak</span><span>{{ player.streak }} jours</span></div>
   <div class="stat-row"><span class="label">Fatigue</span><span>{{ player.fatigue }} / 100</span></div>

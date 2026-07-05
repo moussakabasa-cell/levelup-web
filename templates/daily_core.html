@@ -14,25 +14,47 @@
 <div class="card">
   <h2>Fondations du jour</h2>
   {% if foundations %}
-    {% for f in foundations %}
-      <div class="list-item">
-        <span>{{ f.title }} <span class="muted">[{{ f.type }}] poids:{{ f.weight }}</span></span>
-        <span>
-          {% if f.status == 1 %}
-            <form class="inline" method="post" action="{{ url_for('daily_core.unvalidate', foundation_id=f.id) }}">
-              <button class="btn small secondary" type="submit">Annuler</button>
-            </form>
-          {% else %}
+    {% set pending = foundations|selectattr('status', 'ne', 1)|list %}
+    {% set done = foundations|selectattr('status', 'equalto', 1)|list %}
+
+    {% if pending %}
+      {% for f in pending %}
+        <div class="list-item">
+          <span>{{ f.title }} <span class="muted">[{{ f.type }}] poids:{{ f.weight }}</span></span>
+          <span>
             <form class="inline" method="post" action="{{ url_for('daily_core.validate', foundation_id=f.id) }}">
               <button class="btn small" type="submit">Valider</button>
             </form>
-          {% endif %}
-          <form class="inline confirm-delete" method="post" action="{{ url_for('daily_core.delete', foundation_id=f.id) }}">
-            <button class="btn small secondary" type="submit">✕</button>
-          </form>
-        </span>
+            <form class="inline confirm-delete" method="post" action="{{ url_for('daily_core.delete', foundation_id=f.id) }}">
+              <button class="btn small secondary" type="submit">✕</button>
+            </form>
+          </span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state" style="border-color: var(--stamp); color: var(--stamp); background: rgba(184,135,58,0.06);">
+        Toutes les fondations sont validées aujourd'hui. Bien joué.
       </div>
-    {% endfor %}
+    {% endif %}
+
+    {% if done %}
+      <div class="muted" style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin: 16px 0 6px; padding-top: 12px; border-top: 1px solid var(--panel-border);">
+        Déjà validées ({{ done|length }})
+      </div>
+      {% for f in done %}
+        <div class="list-item" style="opacity: 0.6;">
+          <span>{{ f.title }} <span class="muted">[{{ f.type }}] poids:{{ f.weight }}</span></span>
+          <span>
+            <form class="inline" method="post" action="{{ url_for('daily_core.unvalidate', foundation_id=f.id) }}">
+              <button class="btn small secondary" type="submit">Annuler</button>
+            </form>
+            <form class="inline confirm-delete" method="post" action="{{ url_for('daily_core.delete', foundation_id=f.id) }}">
+              <button class="btn small secondary" type="submit">✕</button>
+            </form>
+          </span>
+        </div>
+      {% endfor %}
+    {% endif %}
   {% else %}
     <div class="empty-state">Aucune fondation pour l'instant. Ajoutes-en une pour commencer à mesurer la stabilité de ta journée.</div>
   {% endif %}

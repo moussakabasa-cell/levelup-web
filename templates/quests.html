@@ -2,45 +2,74 @@
 {% block title %}Quêtes — LevelUp{% endblock %}
 {% block content %}
 
-<div class="card">
-  <h2>Quêtes</h2>
-  {% if quests %}
-    {% for q in quests %}
-      <div class="list-item" style="flex-direction: column; align-items: stretch;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span>
-            {{ q.title }}
-            <span class="muted">[{{ q.type }}]</span>
-            {% if q.status == 1 %}<span class="badge good">FAIT</span>{% endif %}
-          </span>
-          <form class="inline confirm-delete" method="post" action="{{ url_for('quests.delete', quest_id=q.id) }}">
-            <button class="btn small secondary" type="submit">✕</button>
-          </form>
-        </div>
-        {% if q.description or q.location or q.deadline %}
-          <div class="muted" style="font-size:12px; margin-top:4px; padding-left:4px;">
-            {% if q.description %}{{ q.description }}{% endif %}
-            {% if q.location %} · 📍 {{ q.location }}{% endif %}
-            {% if q.deadline %} · échéance {{ q.deadline }}{% endif %}
-          </div>
-        {% endif %}
-        {% if q.status == 0 %}
-        <form method="post" action="{{ url_for('quests.complete', quest_id=q.id) }}" style="display:flex; gap:6px; margin-top:8px; padding-left:4px;">
-          <select name="jalon_id" style="width:auto; margin-bottom:0; font-size:12px; padding:6px 8px; flex:1;">
-            <option value="">— aucun jalon aujourd'hui —</option>
-            {% for p in parcours_list %}
-              {% for j in p.jalons %}
-                <option value="{{ j.id }}">{{ p.title }} → {{ j.title }}{{ ' (déjà coché)' if j.checked else '' }}</option>
-              {% endfor %}
-            {% endfor %}
-          </select>
-          <button class="btn small" type="submit" style="white-space:nowrap;">Compléter</button>
-        </form>
-        {% endif %}
+{% macro quest_item(q, parcours_list) %}
+  <div class="list-item" style="flex-direction: column; align-items: stretch;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span>
+        {{ q.title }}
+        {% if q.status == 1 %}<span class="badge good">FAIT</span>{% endif %}
+      </span>
+      <form class="inline confirm-delete" method="post" action="{{ url_for('quests.delete', quest_id=q.id) }}">
+        <button class="btn small secondary" type="submit">✕</button>
+      </form>
+    </div>
+    {% if q.description or q.location or q.deadline %}
+      <div class="muted" style="font-size:12px; margin-top:4px; padding-left:4px;">
+        {% if q.description %}{{ q.description }}{% endif %}
+        {% if q.location %} · 📍 {{ q.location }}{% endif %}
+        {% if q.deadline %} · échéance {{ q.deadline }}{% endif %}
       </div>
-    {% endfor %}
+    {% endif %}
+    {% if q.status == 0 %}
+    <form method="post" action="{{ url_for('quests.complete', quest_id=q.id) }}" style="display:flex; gap:6px; margin-top:8px; padding-left:4px;">
+      <select name="jalon_id" style="width:auto; margin-bottom:0; font-size:12px; padding:6px 8px; flex:1;">
+        <option value="">— aucun jalon aujourd'hui —</option>
+        {% for p in parcours_list %}
+          {% for j in p.jalons %}
+            <option value="{{ j.id }}">{{ p.title }} → {{ j.title }}{{ ' (déjà coché)' if j.checked else '' }}</option>
+          {% endfor %}
+        {% endfor %}
+      </select>
+      <button class="btn small" type="submit" style="white-space:nowrap;">Compléter</button>
+    </form>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% set dailies = quests|selectattr('type', 'equalto', 'DAILY')|list %}
+{% set ponctuelles = quests|selectattr('type', 'equalto', 'PONCTUELLE')|list %}
+{% set dailies_pending = dailies|selectattr('status', 'equalto', 0)|list %}
+{% set dailies_done = dailies|selectattr('status', 'equalto', 1)|list %}
+
+<div class="card">
+  <h2>Quêtes du jour</h2>
+  {% if dailies %}
+    {% if dailies_pending %}
+      {% for q in dailies_pending %}{{ quest_item(q, parcours_list) }}{% endfor %}
+    {% else %}
+      <div class="empty-state" style="border-color: var(--stamp); color: var(--stamp); background: rgba(184,135,58,0.06);">
+        Toutes tes quêtes DAILY sont complétées aujourd'hui.
+      </div>
+    {% endif %}
+    {% if dailies_done %}
+      <div class="muted" style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin: 16px 0 6px; padding-top: 12px; border-top: 1px solid var(--panel-border);">
+        Déjà faites ({{ dailies_done|length }})
+      </div>
+      {% for q in dailies_done %}
+        <div style="opacity: 0.55;">{{ quest_item(q, parcours_list) }}</div>
+      {% endfor %}
+    {% endif %}
   {% else %}
-    <div class="empty-state">Aucune quête pour l'instant. Ajoute la première action concrète que tu veux tracker.</div>
+    <div class="empty-state">Aucune quête quotidienne. Ajoute la première action que tu veux répéter chaque jour.</div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Quêtes ponctuelles</h2>
+  {% if ponctuelles %}
+    {% for q in ponctuelles %}{{ quest_item(q, parcours_list) }}{% endfor %}
+  {% else %}
+    <div class="empty-state">Aucune quête ponctuelle. Ajoute une action à faire une seule fois (lieu + deadline si utile).</div>
   {% endif %}
 </div>
 

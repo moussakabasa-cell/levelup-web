@@ -31,49 +31,65 @@
   {% endif %}
 </div>
 
+{% macro jalon_item(j, dimmed=False) %}
+  <div class="list-item" style="flex-direction: column; align-items: stretch;{{ ' opacity: 0.55;' if dimmed }}">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span>{{ jalon_icon(checked=j.checked, size=16) }} {{ j.title }}</span>
+      <span>
+        {% if j.checked %}
+          <form class="inline" method="post" action="{{ url_for('parcours.uncheck_jalon', parcours_id=p.id, jalon_id=j.id) }}">
+            <button class="btn small secondary" type="submit">Décocher</button>
+          </form>
+        {% else %}
+          <form class="inline" method="post" action="{{ url_for('parcours.check_jalon', parcours_id=p.id, jalon_id=j.id) }}">
+            <button class="btn small" type="submit">Cocher</button>
+          </form>
+        {% endif %}
+        <form class="inline confirm-delete" method="post" action="{{ url_for('parcours.delete_jalon', parcours_id=p.id, jalon_id=j.id) }}">
+          <button class="btn small secondary" type="submit">✕</button>
+        </form>
+      </span>
+    </div>
+    {% set completions = completions_by_jalon.get(j.id, []) %}
+    {% if completions %}
+      <div class="muted" style="font-size:12px; margin-top:4px; padding-left:4px;">
+        Dernières séances comptées ici :
+        {% for c in completions %}
+          {{ c.title }} ({{ c.date }}){{ ', ' if not loop.last }}
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if autres_parcours and not j.checked %}
+      <form class="inline" method="post" action="{{ url_for('parcours.duplicate_jalon', parcours_id=p.id, jalon_id=j.id) }}" style="margin-top:6px; padding-left:4px; display:flex; gap:6px;">
+        <select name="target_parcours_id" style="width:auto; margin-bottom:0; font-size:12px; padding:4px 8px;">
+          {% for other in autres_parcours %}
+            <option value="{{ other.id }}">→ Dupliquer vers {{ other.title }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn small secondary" type="submit" style="white-space:nowrap;">Dupliquer</button>
+      </form>
+    {% endif %}
+  </div>
+{% endmacro %}
+
 <div class="card">
   <h2>Jalons</h2>
   {% if p.jalons %}
-    {% for j in p.jalons %}
-      <div class="list-item" style="flex-direction: column; align-items: stretch;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span>{{ jalon_icon(checked=j.checked, size=16) }} {{ j.title }}</span>
-          <span>
-            {% if j.checked %}
-              <form class="inline" method="post" action="{{ url_for('parcours.uncheck_jalon', parcours_id=p.id, jalon_id=j.id) }}">
-                <button class="btn small secondary" type="submit">Décocher</button>
-              </form>
-            {% else %}
-              <form class="inline" method="post" action="{{ url_for('parcours.check_jalon', parcours_id=p.id, jalon_id=j.id) }}">
-                <button class="btn small" type="submit">Cocher</button>
-              </form>
-            {% endif %}
-            <form class="inline confirm-delete" method="post" action="{{ url_for('parcours.delete_jalon', parcours_id=p.id, jalon_id=j.id) }}">
-              <button class="btn small secondary" type="submit">✕</button>
-            </form>
-          </span>
-        </div>
-        {% set completions = completions_by_jalon.get(j.id, []) %}
-        {% if completions %}
-          <div class="muted" style="font-size:12px; margin-top:4px; padding-left:4px;">
-            Dernières séances comptées ici :
-            {% for c in completions %}
-              {{ c.title }} ({{ c.date }}){{ ', ' if not loop.last }}
-            {% endfor %}
-          </div>
-        {% endif %}
-        {% if autres_parcours %}
-          <form class="inline" method="post" action="{{ url_for('parcours.duplicate_jalon', parcours_id=p.id, jalon_id=j.id) }}" style="margin-top:6px; padding-left:4px; display:flex; gap:6px;">
-            <select name="target_parcours_id" style="width:auto; margin-bottom:0; font-size:12px; padding:4px 8px;">
-              {% for other in autres_parcours %}
-                <option value="{{ other.id }}">→ Dupliquer vers {{ other.title }}</option>
-              {% endfor %}
-            </select>
-            <button class="btn small secondary" type="submit" style="white-space:nowrap;">Dupliquer</button>
-          </form>
-        {% endif %}
+    {% set pending = p.jalons|selectattr('checked', 'equalto', 0)|list %}
+    {% set done = p.jalons|selectattr('checked', 'equalto', 1)|list %}
+
+    {% if pending %}
+      {% for j in pending %}{{ jalon_item(j, dimmed=False) }}{% endfor %}
+    {% endif %}
+
+    {% if done %}
+      {% if pending %}
+      <div class="muted" style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin: 16px 0 6px; padding-top: 12px; border-top: 1px solid var(--panel-border);">
+        Cochés ({{ done|length }})
       </div>
-    {% endfor %}
+      {% endif %}
+      {% for j in done %}{{ jalon_item(j, dimmed=True) }}{% endfor %}
+    {% endif %}
   {% else %}
     <div class="empty-state">Pas encore de jalon ici. Ajoute la première étape concrète qui montrera que ce parcours avance.</div>
   {% endif %}

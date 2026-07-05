@@ -3,32 +3,51 @@
 {% block title %}Parcours — LevelUp{% endblock %}
 {% block content %}
 
+{% macro parcours_item(p, with_deadline) %}
+  <div class="list-item" style="flex-direction: column; align-items: stretch;{{ ' opacity: 0.55;' if p.status == 3 }}">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <a href="{{ url_for('parcours.detail', parcours_id=p.id) }}" style="color:inherit; text-decoration:none;">
+        {{ p.title }}
+        <span class="muted">
+          {% if with_deadline %}{{ p.checked_jalon_count() }}/{{ p.jalon_count() }} — échéance {{ p.deadline }}
+          {% else %}[{{ p.category or '—' }}] {{ p.checked_jalon_count() }}/{{ p.jalon_count() }} jalons{% endif %}
+        </span>
+      </a>
+      <span>
+        {% if with_deadline %}
+          <span class="badge {{ 'good' if p.status == 3 else 'warn' if p.status == 2 else '' }}">{{ labels[p.status] }}</span>
+        {% endif %}
+        <form class="inline confirm-delete" method="post" action="{{ url_for('parcours.delete', parcours_id=p.id) }}">
+          <button class="btn small secondary" type="submit">✕</button>
+        </form>
+      </span>
+    </div>
+    {% if p.jalon_count() > 0 %}
+    <div class="jalon-frieze">
+      {% for i in range([p.jalon_count(), 15]|min) %}
+        {{ jalon_icon(checked=(i < p.checked_jalon_count()), size=12) }}
+      {% endfor %}
+      {% if p.jalon_count() > 15 %}<span class="overflow">+{{ p.jalon_count() - 15 }}</span>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{# Tri : EN RETARD (2) en haut, DANS LES TEMPS (1), EN AVANCE (0), INCONNU (4), COMPLETE (3) en bas #}
+{% set order = {2: 0, 1: 1, 0: 2, 4: 3, 3: 4} %}
+{% set bornes_sorted = bornes|sort(attribute='status', reverse=false)|sort(attribute='status', reverse=false) %}
+{% set bornes_ordered = bornes|list %}
+
 <div class="card">
   <h2>Parcours avec deadline</h2>
   {% if bornes %}
-    {% for p in bornes %}
-      <div class="list-item" style="flex-direction: column; align-items: stretch;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <a href="{{ url_for('parcours.detail', parcours_id=p.id) }}" style="color:inherit; text-decoration:none;">
-            {{ p.title }}
-            <span class="muted">{{ p.checked_jalon_count() }}/{{ p.jalon_count() }} — échéance {{ p.deadline }}</span>
-          </a>
-          <span>
-            <span class="badge {{ 'good' if p.status == 3 else 'warn' if p.status == 2 else '' }}">{{ labels[p.status] }}</span>
-            <form class="inline confirm-delete" method="post" action="{{ url_for('parcours.delete', parcours_id=p.id) }}">
-              <button class="btn small secondary" type="submit">✕</button>
-            </form>
-          </span>
-        </div>
-        {% if p.jalon_count() > 0 %}
-        <div class="jalon-frieze">
-          {% for i in range([p.jalon_count(), 15]|min) %}
-            {{ jalon_icon(checked=(i < p.checked_jalon_count()), size=12) }}
-          {% endfor %}
-          {% if p.jalon_count() > 15 %}<span class="overflow">+{{ p.jalon_count() - 15 }}</span>{% endif %}
-        </div>
-        {% endif %}
-      </div>
+    {% for p in bornes|sort(attribute='status', reverse=false)|list %}
+      {# on affiche dans l'ordre : en retard, dans les temps, en avance, inconnu, complète #}
+    {% endfor %}
+    {% for status_val in [2, 1, 0, 4, 3] %}
+      {% for p in bornes if p.status == status_val %}
+        {{ parcours_item(p, True) }}
+      {% endfor %}
     {% endfor %}
   {% else %}
     <div class="empty-state">Aucun projet borné pour l'instant. Ajoutes-en un avec une deadline réelle.</div>
@@ -38,26 +57,12 @@
 <div class="card">
   <h2>Parcours sans deadline (compétences continues)</h2>
   {% if perpetuels %}
-    {% for p in perpetuels %}
-      <div class="list-item" style="flex-direction: column; align-items: stretch;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <a href="{{ url_for('parcours.detail', parcours_id=p.id) }}" style="color:inherit; text-decoration:none;">
-            {{ p.title }}
-            <span class="muted">[{{ p.category or '—' }}] {{ p.checked_jalon_count() }}/{{ p.jalon_count() }} jalons</span>
-          </a>
-          <form class="inline confirm-delete" method="post" action="{{ url_for('parcours.delete', parcours_id=p.id) }}">
-            <button class="btn small secondary" type="submit">✕</button>
-          </form>
-        </div>
-        {% if p.jalon_count() > 0 %}
-        <div class="jalon-frieze">
-          {% for i in range([p.jalon_count(), 15]|min) %}
-            {{ jalon_icon(checked=(i < p.checked_jalon_count()), size=12) }}
-          {% endfor %}
-          {% if p.jalon_count() > 15 %}<span class="overflow">+{{ p.jalon_count() - 15 }}</span>{% endif %}
-        </div>
-        {% endif %}
-      </div>
+    {# non-complets d'abord, complets en bas #}
+    {% for p in perpetuels if p.jalon_count() == 0 or p.checked_jalon_count() < p.jalon_count() %}
+      {{ parcours_item(p, False) }}
+    {% endfor %}
+    {% for p in perpetuels if p.jalon_count() > 0 and p.checked_jalon_count() == p.jalon_count() %}
+      {{ parcours_item(p, False) }}
     {% endfor %}
   {% else %}
     <div class="empty-state">Aucune compétence continue pour l'instant. Ajoutes-en une — sans deadline, pour ce qui ne se termine jamais vraiment.</div>

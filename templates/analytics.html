@@ -4,6 +4,13 @@
 
 <div class="card">
   <h2>Jours actifs (90 derniers jours)</h2>
+  {% set active_days = heatmap|selectattr('count', 'gt', 0)|list|length %}
+  {% set best_day = heatmap|max(attribute='count') if heatmap else None %}
+  {% if active_days > 0 %}
+  <p class="muted" style="font-size: 13px; margin: 0 0 10px;">
+    <strong style="color: var(--stamp);">{{ active_days }}</strong> jours actifs sur 90{% if best_day and best_day.count > 0 %} · meilleur jour : <strong style="color: var(--stamp);">{{ best_day.count }}</strong> quêtes ({{ best_day.date }}){% endif %}
+  </p>
+  {% endif %}
   <div style="display:flex; flex-wrap:wrap; gap:3px;">
     {% for day in heatmap %}
       {% set intensity = 'var(--panel-border)' if day.count == 0 else
@@ -20,6 +27,10 @@
 <div class="card">
   <h2>Jalons cochés dans le temps (cumul)</h2>
   {% if jalons %}
+    {% set total_jalons = jalons[-1].total %}
+    <p class="muted" style="font-size: 13px; margin: 0 0 10px;">
+      <strong style="color: var(--stamp);">{{ total_jalons }}</strong> jalons cochés au total.
+    </p>
     <canvas id="jalonsChart" height="180"></canvas>
   {% else %}
     <p class="muted">Aucun jalon coché pour l'instant.</p>
@@ -41,6 +52,11 @@
 <div class="card">
   <h2>Taux de validation par fondation (30 derniers jours)</h2>
   {% if foundation_rates %}
+    {% set best = foundation_rates|max(attribute='rate') %}
+    {% set worst = foundation_rates|min(attribute='rate') %}
+    <p class="muted" style="font-size: 13px; margin: 0 0 10px;">
+      Meilleur : <strong style="color: var(--stamp);">{{ best.title }}</strong> ({{ best.rate }}%) · à travailler : <strong style="color: var(--warn);">{{ worst.title }}</strong> ({{ worst.rate }}%)
+    </p>
     <canvas id="foundationChart" height="200"></canvas>
   {% else %}
     <div class="empty-state">Aucune fondation définie pour l'instant.</div>
@@ -50,6 +66,11 @@
 <div class="card">
   <h2>Quêtes complétées par catégorie (30 derniers jours)</h2>
   {% if categories %}
+    {% set top = categories|max(attribute='count') %}
+    {% set total = categories|sum(attribute='count') %}
+    <p class="muted" style="font-size: 13px; margin: 0 0 10px;">
+      Dominante : <strong style="color: var(--stamp);">{{ top.category }}</strong> ({{ top.count }} sur {{ total }} complétions)
+    </p>
     <canvas id="categoryChart" height="200"></canvas>
   {% else %}
     <p class="muted">Aucune complétion liée à un jalon catégorisé pour l'instant.</p>

@@ -38,7 +38,25 @@
   {% endif %}
 </div>
 
-{% if jalons or snapshots %}
+<div class="card">
+  <h2>Taux de validation par fondation (30 derniers jours)</h2>
+  {% if foundation_rates %}
+    <canvas id="foundationChart" height="200"></canvas>
+  {% else %}
+    <div class="empty-state">Aucune fondation définie pour l'instant.</div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Quêtes complétées par catégorie (30 derniers jours)</h2>
+  {% if categories %}
+    <canvas id="categoryChart" height="200"></canvas>
+  {% else %}
+    <p class="muted">Aucune complétion liée à un jalon catégorisé pour l'instant.</p>
+  {% endif %}
+</div>
+
+{% if jalons or snapshots or foundation_rates or categories %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
   const gridColor = 'rgba(139,147,158,0.15)';
@@ -80,6 +98,11 @@
           borderColor: '#4a8a7e', tension: 0.2,
         },
         {
+          label: 'Fondations (score du jour)',
+          data: {{ snapshots | map(attribute='daily_core_score') | list | tojson }},
+          borderColor: '#b8873a', tension: 0.2,
+        },
+        {
           label: 'Score de vie',
           data: {{ snapshots | map(attribute='life_score_global') | list | tojson }},
           borderColor: '#c9a227', tension: 0.2,
@@ -102,6 +125,48 @@
         y: { ticks: { color: textColor }, grid: { color: gridColor } }
       },
       plugins: { legend: { labels: { color: textColor } } }
+    }
+  });
+  {% endif %}
+
+  {% if foundation_rates %}
+  new Chart(document.getElementById('foundationChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ foundation_rates | map(attribute='title') | list | tojson }},
+      datasets: [{
+        label: 'Taux de validation (%)',
+        data: {{ foundation_rates | map(attribute='rate') | list | tojson }},
+        backgroundColor: '#b8873a',
+      }]
+    },
+    options: {
+      scales: {
+        x: { ticks: { color: textColor }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor }, grid: { color: gridColor }, beginAtZero: true, max: 100 }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+  {% endif %}
+
+  {% if categories %}
+  new Chart(document.getElementById('categoryChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ categories | map(attribute='category') | list | tojson }},
+      datasets: [{
+        label: 'Quêtes complétées',
+        data: {{ categories | map(attribute='count') | list | tojson }},
+        backgroundColor: '#5b6f82',
+      }]
+    },
+    options: {
+      scales: {
+        x: { ticks: { color: textColor }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor }, grid: { color: gridColor }, beginAtZero: true }
+      },
+      plugins: { legend: { display: false } }
     }
   });
   {% endif %}

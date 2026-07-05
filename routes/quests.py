@@ -9,7 +9,7 @@ bp = Blueprint("quests", __name__, url_prefix="/quetes")
 @bp.route("/")
 def index():
     all_quests = Quest.query.all()
-    parcours_list = Parcours.query.all()   # pour construire le select jalon groupé par parcours
+    parcours_list = Parcours.query.all()   # pour le select jalon au moment de la complétion
     return render_template(
         "quests.html", active="quests",
         quests=all_quests, parcours_list=parcours_list, types=Quest.TYPES,
@@ -19,7 +19,6 @@ def index():
 @bp.route("/nouvelle", methods=["POST"])
 def create():
     title = request.form.get("title", "").strip()
-    jalon_id = request.form.get("jalon_id", type=int)
     qtype = request.form.get("type")
     description = request.form.get("description", "").strip() or None
     location = request.form.get("location", "").strip() or None
@@ -27,7 +26,7 @@ def create():
 
     try:
         quests_core.create(
-            title, jalon_id, qtype,
+            title, qtype,
             description=description, location=location, deadline=deadline,
         )
     except ValueError as e:
@@ -39,12 +38,12 @@ def create():
 @bp.route("/completer/<int:quest_id>", methods=["POST"])
 def complete(quest_id):
     player = Player.get()
-    result = quests_core.complete(quest_id, player)
+    jalon_id = request.form.get("jalon_id", type=int)
+    result = quests_core.complete(quest_id, player, jalon_id=jalon_id)
 
     jalon = result.get("jalon")
     if jalon:
-        etat = " (déjà coché)" if jalon.checked else " — coche-le si c'est acquis"
-        flash(f"Tu progresses vers le jalon « {jalon.title} »{etat}.")
+        flash(f"Tu progresses vers le jalon « {jalon.title} » ({jalon.parcours.title}).")
         return redirect(url_for("parcours.detail", parcours_id=jalon.parcours_id))
 
     return redirect(url_for("quests.index"))

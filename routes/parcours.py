@@ -64,10 +64,14 @@ def detail(parcours_id):
     p = Parcours.query.get_or_404(parcours_id)
     parcours_core.refresh_status(p)
     autres_parcours = Parcours.query.filter(Parcours.id != parcours_id).all()
+
+    from core.queries import get_completions_for_jalon
+    completions_by_jalon = {j.id: get_completions_for_jalon(j.id) for j in p.jalons}
+
     return render_template(
         "parcours_detail.html", active="parcours", p=p,
         labels=Parcours.STATUS_LABELS, categories=Parcours.CATEGORIES,
-        autres_parcours=autres_parcours,
+        autres_parcours=autres_parcours, completions_by_jalon=completions_by_jalon,
     )
 
 

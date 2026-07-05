@@ -192,6 +192,17 @@ class Foundation(db.Model):
     SKIPPED = 2
 
 
+class FoundationValidation(db.Model):
+    """Log à chaque validation d'une fondation (pas de dévalidation) —
+    permet de calculer un taux de validation par fondation dans le temps,
+    contrairement au statut courant qui se remet à zéro chaque nuit."""
+    __tablename__ = "foundation_validations"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    foundation_id = db.Column(db.Integer)
+    date = db.Column(db.Text)   # YYYY-MM-DD
+
+
 # ============================================================
 #   ANALYTICS — instantané quotidien pour les courbes d'évolution
 # ============================================================

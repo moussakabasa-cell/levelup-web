@@ -74,3 +74,19 @@ def quest_completed_today(quest_id: int) -> bool:
     return (
         QuestCompletion.query.filter_by(quest_id=quest_id, completed_date=today).count() > 0
     )
+
+
+def get_completions_for_jalon(jalon_id: int, limit: int = 5) -> list:
+    """Historique réel des complétions ayant compté pour ce jalon (choisi
+    au moment de chaque complétion, pas un lien fixe sur la quête)."""
+    from models import Quest
+
+    rows = (
+        db.session.query(QuestCompletion, Quest)
+        .join(Quest, QuestCompletion.quest_id == Quest.id)
+        .filter(QuestCompletion.jalon_id == jalon_id)
+        .order_by(QuestCompletion.completed_date.desc())
+        .limit(limit)
+        .all()
+    )
+    return [{"title": q.title, "date": qc.completed_date} for qc, q in rows]

@@ -33,6 +33,10 @@ def validate_foundation(foundation_id: int):
         return
     f.status = Foundation.DONE
     f.last_done = today_str()
+
+    from models import FoundationValidation
+    db.session.add(FoundationValidation(foundation_id=foundation_id, date=today_str()))
+
     db.session.commit()
 
 

@@ -11,19 +11,11 @@
           <span>
             {{ q.title }}
             <span class="muted">[{{ q.type }}]</span>
-            {% if q.jalon %}<span class="muted">→ {{ q.jalon.title }}</span>{% endif %}
             {% if q.status == 1 %}<span class="badge good">FAIT</span>{% endif %}
           </span>
-          <span>
-            {% if q.status == 0 %}
-            <form class="inline" method="post" action="{{ url_for('quests.complete', quest_id=q.id) }}">
-              <button class="btn small" type="submit">Compléter</button>
-            </form>
-            {% endif %}
-            <form class="inline confirm-delete" method="post" action="{{ url_for('quests.delete', quest_id=q.id) }}">
-              <button class="btn small secondary" type="submit">✕</button>
-            </form>
-          </span>
+          <form class="inline confirm-delete" method="post" action="{{ url_for('quests.delete', quest_id=q.id) }}">
+            <button class="btn small secondary" type="submit">✕</button>
+          </form>
         </div>
         {% if q.description or q.location or q.deadline %}
           <div class="muted" style="font-size:12px; margin-top:4px; padding-left:4px;">
@@ -31,6 +23,19 @@
             {% if q.location %} · 📍 {{ q.location }}{% endif %}
             {% if q.deadline %} · échéance {{ q.deadline }}{% endif %}
           </div>
+        {% endif %}
+        {% if q.status == 0 %}
+        <form method="post" action="{{ url_for('quests.complete', quest_id=q.id) }}" style="display:flex; gap:6px; margin-top:8px; padding-left:4px;">
+          <select name="jalon_id" style="width:auto; margin-bottom:0; font-size:12px; padding:6px 8px; flex:1;">
+            <option value="">— aucun jalon aujourd'hui —</option>
+            {% for p in parcours_list %}
+              {% for j in p.jalons %}
+                <option value="{{ j.id }}">{{ p.title }} → {{ j.title }}{{ ' (déjà coché)' if j.checked else '' }}</option>
+              {% endfor %}
+            {% endfor %}
+          </select>
+          <button class="btn small" type="submit" style="white-space:nowrap;">Compléter</button>
+        </form>
         {% endif %}
       </div>
     {% endfor %}
@@ -46,15 +51,6 @@
     <input type="text" name="title" required>
     <label>Description (optionnelle)</label>
     <input type="text" name="description">
-    <label>Jalon lié (optionnel)</label>
-    <select name="jalon_id">
-      <option value="">— aucun —</option>
-      {% for p in parcours_list %}
-        {% for j in p.jalons %}
-          <option value="{{ j.id }}">{{ p.title }} → {{ j.title }}{{ ' (déjà coché)' if j.checked else '' }}</option>
-        {% endfor %}
-      {% endfor %}
-    </select>
     <label>Type</label>
     <select name="type" id="quest-type">
       {% for t in types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}

@@ -62,7 +62,31 @@ def complete(quest_id: int, player, jalon_id: int | None = None) -> dict:
 
     jalon = Jalon.query.get(jalon_id) if jalon_id else None
 
+    # Si la complétion est liée à un jalon non coché, on vérifie si un
+    # nouveau palier de rappel vient d'être franchi.
+    if jalon and not jalon.checked:
+        _check_threshold_alert(jalon)
+
     return {"quest": q, "jalon": jalon}
+
+
+def _check_threshold_alert(jalon):
+    """Met à jour last_alert_at_count si le palier suivant est franchi.
+    Ne fait rien d'autre — l'affichage effectif de l'alerte est déclenché
+    séparément par core.alerts.build_alerts()."""
+    from models import DEFAULT_COMPLETION_THRESHOLD
+
+    threshold = jalon.completion_threshold or DEFAULT_COMPLETION_THRESHOLD
+    completions = QuestCompletion.query.filter_by(jalon_id=jalon.id).count()
+    last_alert = jalon.last_alert_at_count or 0
+
+    # nombre de paliers franchis (5, 10, 15... pour threshold=5)
+    current_tier = completions // threshold
+    last_tier = last_alert // threshold
+
+    if current_tier > last_tier and current_tier >= 1:
+        jalon.last_alert_at_count = current_tier * threshold
+        db.session.commit()
 
 
 def reset_all_daily():

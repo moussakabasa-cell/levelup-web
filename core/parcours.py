@@ -98,8 +98,12 @@ def delete(parcours_id: int):
         db.session.commit()
 
 
-def add_jalon(parcours_id: int, title: str) -> Jalon:
-    j = Jalon(parcours_id=parcours_id, title=title.strip(), checked=0, checked_date="")
+def add_jalon(parcours_id: int, title: str, completion_threshold: int | None = None) -> Jalon:
+    j = Jalon(
+        parcours_id=parcours_id, title=title.strip(),
+        checked=0, checked_date="",
+        completion_threshold=completion_threshold,
+    )
     db.session.add(j)
     db.session.commit()
     return j
@@ -111,6 +115,7 @@ def check_jalon(jalon_id: int):
         return
     j.checked = 1
     j.checked_date = today_str()
+    j.last_alert_at_count = 0  # reset du palier de rappel
     db.session.commit()
     refresh_status(j.parcours)
     db.session.commit()
@@ -122,6 +127,7 @@ def uncheck_jalon(jalon_id: int):
         return
     j.checked = 0
     j.checked_date = ""
+    j.last_alert_at_count = 0  # reset — si tu décoches, on repart de zéro
     db.session.commit()
     refresh_status(j.parcours)
     db.session.commit()

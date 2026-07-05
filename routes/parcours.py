@@ -78,8 +78,9 @@ def detail(parcours_id):
 @bp.route("/<int:parcours_id>/jalons/nouveau", methods=["POST"])
 def add_jalon(parcours_id):
     title = request.form.get("title", "").strip()
+    threshold = request.form.get("completion_threshold", type=int)
     if title:
-        parcours_core.add_jalon(parcours_id, title)
+        parcours_core.add_jalon(parcours_id, title, completion_threshold=threshold)
     return redirect(url_for("parcours.detail", parcours_id=parcours_id))
 
 

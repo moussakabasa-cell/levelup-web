@@ -79,8 +79,22 @@ class Jalon(db.Model):
     title = db.Column(db.Text, nullable=False)
     checked = db.Column(db.Integer, default=0)
     checked_date = db.Column(db.Text, default="")
+    # Seuil de rappel : nombre de séances comptées avant qu'une alerte
+    # suggère de cocher. NULL = utiliser la valeur par défaut applicative
+    # (voir DEFAULT_COMPLETION_THRESHOLD). On distingue NULL de "5" exprès
+    # pour pouvoir changer le défaut plus tard sans casser les jalons
+    # créés sans réflexion.
+    completion_threshold = db.Column(db.Integer)
+    # Palier auquel la dernière alerte "prêt à cocher" a été émise.
+    # Mis à jour au moment où une nouvelle complétion franchit un palier
+    # (pas à l'affichage) — l'alerte reste visible tant qu'il n'y a pas
+    # de nouvelle complétion ou un cochage.
+    last_alert_at_count = db.Column(db.Integer, default=0)
 
     quests = db.relationship("Quest", backref="jalon")
+
+
+DEFAULT_COMPLETION_THRESHOLD = 5
 
 
 # ============================================================

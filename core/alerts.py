@@ -47,4 +47,12 @@ def build_alerts() -> list[str]:
             alerts.append(f"Incoherence : \"{p.title}\" - aucune seance cette semaine.")
             break
 
+    # Rappels "prêt à cocher" — un par jalon dont le palier est actif
+    from core.threshold import get_pending_threshold_jalons
+    for item in get_pending_threshold_jalons():
+        j = item["jalon"]
+        alerts.append(
+            f"Jalon \"{j.title}\" — {item['count']} séances comptées. Prêt à cocher ?"
+        )
+
     return alerts

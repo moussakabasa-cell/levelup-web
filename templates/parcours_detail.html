@@ -100,6 +100,8 @@
   <form method="post" action="{{ url_for('parcours.add_jalon', parcours_id=p.id) }}">
     <label>Titre</label>
     <input type="text" name="title" required>
+    <label>Seuil de rappel (optionnel — nombre de séances avant qu'une alerte suggère de cocher. Vide = 5 par défaut)</label>
+    <input type="number" name="completion_threshold" min="1" max="50" placeholder="5">
     <button class="btn" type="submit">Ajouter</button>
   </form>
 </div>

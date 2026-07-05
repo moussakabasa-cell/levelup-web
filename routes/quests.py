@@ -21,9 +21,15 @@ def create():
     title = request.form.get("title", "").strip()
     jalon_id = request.form.get("jalon_id", type=int)
     qtype = request.form.get("type")
+    description = request.form.get("description", "").strip() or None
+    location = request.form.get("location", "").strip() or None
+    deadline = request.form.get("deadline", "").strip() or None
 
     try:
-        quests_core.create(title, jalon_id, qtype)
+        quests_core.create(
+            title, jalon_id, qtype,
+            description=description, location=location, deadline=deadline,
+        )
     except ValueError as e:
         flash(str(e))
 

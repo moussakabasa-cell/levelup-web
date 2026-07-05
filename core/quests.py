@@ -6,7 +6,9 @@ from models import Quest, QuestCompletion, Jalon, today_str
 from core import player_state
 
 
-def create(title: str, jalon_id: int | None, qtype: str) -> Quest:
+def create(title: str, jalon_id: int | None, qtype: str,
+           description: str | None = None, location: str | None = None,
+           deadline: str | None = None) -> Quest:
     if qtype not in Quest.TYPES:
         raise ValueError(f"Type invalide (attendu: {Quest.TYPES})")
 
@@ -16,6 +18,9 @@ def create(title: str, jalon_id: int | None, qtype: str) -> Quest:
         type=qtype,
         status=Quest.STATUS_AVAILABLE,
         last_completed="NEVER",
+        description=description or None,
+        location=location or None,
+        deadline=deadline or None,
     )
     db.session.add(q)
     db.session.commit()

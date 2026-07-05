@@ -6,23 +6,32 @@
   <h2>Quêtes</h2>
   {% if quests %}
     {% for q in quests %}
-      <div class="list-item">
-        <span>
-          {{ q.title }}
-          <span class="muted">[{{ q.type }}]</span>
-          {% if q.jalon %}<span class="muted">→ {{ q.jalon.title }}</span>{% endif %}
-          {% if q.status == 1 %}<span class="badge good">FAIT</span>{% endif %}
-        </span>
-        <span>
-          {% if q.status == 0 %}
-          <form class="inline" method="post" action="{{ url_for('quests.complete', quest_id=q.id) }}">
-            <button class="btn small" type="submit">Compléter</button>
-          </form>
-          {% endif %}
-          <form class="inline confirm-delete" method="post" action="{{ url_for('quests.delete', quest_id=q.id) }}">
-            <button class="btn small secondary" type="submit">✕</button>
-          </form>
-        </span>
+      <div class="list-item" style="flex-direction: column; align-items: stretch;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span>
+            {{ q.title }}
+            <span class="muted">[{{ q.type }}]</span>
+            {% if q.jalon %}<span class="muted">→ {{ q.jalon.title }}</span>{% endif %}
+            {% if q.status == 1 %}<span class="badge good">FAIT</span>{% endif %}
+          </span>
+          <span>
+            {% if q.status == 0 %}
+            <form class="inline" method="post" action="{{ url_for('quests.complete', quest_id=q.id) }}">
+              <button class="btn small" type="submit">Compléter</button>
+            </form>
+            {% endif %}
+            <form class="inline confirm-delete" method="post" action="{{ url_for('quests.delete', quest_id=q.id) }}">
+              <button class="btn small secondary" type="submit">✕</button>
+            </form>
+          </span>
+        </div>
+        {% if q.description or q.location or q.deadline %}
+          <div class="muted" style="font-size:12px; margin-top:4px; padding-left:4px;">
+            {% if q.description %}{{ q.description }}{% endif %}
+            {% if q.location %} · 📍 {{ q.location }}{% endif %}
+            {% if q.deadline %} · échéance {{ q.deadline }}{% endif %}
+          </div>
+        {% endif %}
       </div>
     {% endfor %}
   {% else %}
@@ -35,6 +44,8 @@
   <form method="post" action="{{ url_for('quests.create') }}">
     <label>Titre</label>
     <input type="text" name="title" required>
+    <label>Description (optionnelle)</label>
+    <input type="text" name="description">
     <label>Jalon lié (optionnel)</label>
     <select name="jalon_id">
       <option value="">— aucun —</option>
@@ -45,11 +56,27 @@
       {% endfor %}
     </select>
     <label>Type</label>
-    <select name="type">
+    <select name="type" id="quest-type">
       {% for t in types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
     </select>
+    <div id="ponctuelle-fields">
+      <label>Lieu (surtout utile pour les quêtes ponctuelles)</label>
+      <input type="text" name="location">
+      <label>Deadline (surtout utile pour les quêtes ponctuelles)</label>
+      <input type="date" name="deadline">
+    </div>
     <button class="btn" type="submit">Ajouter</button>
   </form>
 </div>
+
+<script>
+  const typeSelect = document.getElementById('quest-type');
+  const ponctuelleFields = document.getElementById('ponctuelle-fields');
+  function toggleFields() {
+    ponctuelleFields.style.display = (typeSelect.value === 'DAILY') ? 'none' : 'block';
+  }
+  typeSelect.addEventListener('change', toggleFields);
+  toggleFields();
+</script>
 
 {% endblock %}

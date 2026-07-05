@@ -41,13 +41,31 @@ def delete(parcours_id):
     return redirect(url_for("parcours.index"))
 
 
+@bp.route("/<int:parcours_id>/modifier", methods=["POST"])
+def update(parcours_id):
+    title = request.form.get("title", "").strip()
+    deadline = request.form.get("deadline", "").strip() or None
+    category = request.form.get("category", "").strip() or None
+    description = request.form.get("description", "").strip() or None
+
+    try:
+        parcours_core.update(
+            parcours_id, title=title or None, deadline=deadline,
+            category=category, description=description,
+        )
+    except ValueError as e:
+        flash(str(e))
+
+    return redirect(url_for("parcours.detail", parcours_id=parcours_id))
+
+
 @bp.route("/<int:parcours_id>")
 def detail(parcours_id):
     p = Parcours.query.get_or_404(parcours_id)
     parcours_core.refresh_status(p)
     return render_template(
         "parcours_detail.html", active="parcours", p=p,
-        labels=Parcours.STATUS_LABELS,
+        labels=Parcours.STATUS_LABELS, categories=Parcours.CATEGORIES,
     )
 
 

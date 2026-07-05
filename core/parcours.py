@@ -63,6 +63,34 @@ def create(title: str, deadline: str | None = None, category: str | None = None,
     return p
 
 
+def update(parcours_id: int, title: str | None = None, deadline: str | None = "__unset__",
+           category: str | None = "__unset__", description: str | None = "__unset__") -> Parcours | None:
+    """
+    Modifie un parcours existant. `deadline`/`category`/`description` utilisent
+    un marqueur __unset__ par défaut pour distinguer "ne pas toucher à ce champ"
+    de "remettre à vide" (None explicite envoyé depuis le formulaire).
+    """
+    p = Parcours.query.get(parcours_id)
+    if p is None:
+        return None
+
+    if title:
+        p.title = title.strip()
+    if deadline != "__unset__":
+        p.deadline = deadline or None
+    if category != "__unset__":
+        if category and category not in Parcours.CATEGORIES:
+            raise ValueError(f"Categorie invalide (attendu: {Parcours.CATEGORIES})")
+        p.category = category or None
+    if description != "__unset__":
+        p.description = description or None
+
+    db.session.commit()
+    refresh_status(p)
+    db.session.commit()
+    return p
+
+
 def delete(parcours_id: int):
     p = Parcours.query.get(parcours_id)
     if p:

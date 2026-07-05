@@ -72,6 +72,24 @@
   </form>
 </div>
 
+<div class="card">
+  <h2>Modifier</h2>
+  <form method="post" action="{{ url_for('parcours.update', parcours_id=p.id) }}">
+    <label>Titre</label>
+    <input type="text" name="title" value="{{ p.title }}" required>
+    <label>Description</label>
+    <input type="text" name="description" value="{{ p.description or '' }}">
+    <label>Deadline (laisser vide = compétence continue)</label>
+    <input type="date" name="deadline" value="{{ p.deadline or '' }}">
+    <label>Catégorie</label>
+    <select name="category">
+      <option value="">— aucune —</option>
+      {% for c in categories %}<option value="{{ c }}" {{ 'selected' if p.category == c }}>{{ c }}</option>{% endfor %}
+    </select>
+    <button class="btn" type="submit">Enregistrer</button>
+  </form>
+</div>
+
 <a href="{{ url_for('parcours.index') }}" class="muted">← retour aux parcours</a>
 
 {% endblock %}

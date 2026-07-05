@@ -40,7 +40,10 @@ class Parcours(db.Model):
         order_by="Jalon.id",
     )
 
-    CATEGORIES = ["ACADEMIQUE", "PROJET", "PERSO", "HUMAIN"]
+    CATEGORIES = [
+        "ACADEMIQUE", "PROJET", "PERSO", "HUMAIN",
+        "SANTE", "SPIRITUEL", "FINANCIER", "SOCIAL",
+    ]
 
     # Statuts (mêmes valeurs que l'ancien LtgStatus, gardées pour compat)
     EN_AVANCE = 0
@@ -93,6 +96,9 @@ class Quest(db.Model):
     type = db.Column(db.Text)          # DAILY / PONCTUELLE
     status = db.Column(db.Integer, default=0)   # 0=AVAILABLE, 1=COMPLETED
     last_completed = db.Column(db.Text, default="NEVER")
+    description = db.Column(db.Text)              # optionnelle, tous types
+    location = db.Column(db.Text)                 # optionnelle, surtout PONCTUELLE
+    deadline = db.Column(db.Text)                  # YYYY-MM-DD, optionnelle, surtout PONCTUELLE
 
     TYPES = ["DAILY", "PONCTUELLE"]
     STATUS_AVAILABLE = 0

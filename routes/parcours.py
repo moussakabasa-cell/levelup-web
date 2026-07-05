@@ -63,9 +63,11 @@ def update(parcours_id):
 def detail(parcours_id):
     p = Parcours.query.get_or_404(parcours_id)
     parcours_core.refresh_status(p)
+    autres_parcours = Parcours.query.filter(Parcours.id != parcours_id).all()
     return render_template(
         "parcours_detail.html", active="parcours", p=p,
         labels=Parcours.STATUS_LABELS, categories=Parcours.CATEGORIES,
+        autres_parcours=autres_parcours,
     )
 
 
@@ -92,4 +94,13 @@ def uncheck_jalon(parcours_id, jalon_id):
 @bp.route("/<int:parcours_id>/jalons/supprimer/<int:jalon_id>", methods=["POST"])
 def delete_jalon(parcours_id, jalon_id):
     parcours_core.delete_jalon(jalon_id)
+    return redirect(url_for("parcours.detail", parcours_id=parcours_id))
+
+
+@bp.route("/<int:parcours_id>/jalons/dupliquer/<int:jalon_id>", methods=["POST"])
+def duplicate_jalon(parcours_id, jalon_id):
+    target_id = request.form.get("target_parcours_id", type=int)
+    if target_id:
+        parcours_core.duplicate_jalon(jalon_id, target_id)
+        flash("Jalon dupliqué — c'est une copie indépendante, cocher l'un ne touche pas l'autre.")
     return redirect(url_for("parcours.detail", parcours_id=parcours_id))

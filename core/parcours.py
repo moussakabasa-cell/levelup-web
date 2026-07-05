@@ -134,6 +134,18 @@ def delete_jalon(jalon_id: int):
         db.session.commit()
 
 
+def duplicate_jalon(jalon_id: int, target_parcours_id: int) -> Jalon | None:
+    """Copie le titre d'un jalon vers un autre parcours — nouveau jalon
+    indépendant, coché à zéro, aucun lien avec l'original."""
+    source = Jalon.query.get(jalon_id)
+    if source is None:
+        return None
+    new_jalon = Jalon(parcours_id=target_parcours_id, title=source.title, checked=0, checked_date="")
+    db.session.add(new_jalon)
+    db.session.commit()
+    return new_jalon
+
+
 def has_work_this_week() -> dict:
     """
     Alerte cohérence — uniquement pour les parcours AVEC deadline (l'ancien

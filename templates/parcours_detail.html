@@ -56,6 +56,16 @@
             {% endfor %}
           </div>
         {% endif %}
+        {% if autres_parcours %}
+          <form class="inline" method="post" action="{{ url_for('parcours.duplicate_jalon', parcours_id=p.id, jalon_id=j.id) }}" style="margin-top:6px; padding-left:4px; display:flex; gap:6px;">
+            <select name="target_parcours_id" style="width:auto; margin-bottom:0; font-size:12px; padding:4px 8px;">
+              {% for other in autres_parcours %}
+                <option value="{{ other.id }}">→ Dupliquer vers {{ other.title }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn small secondary" type="submit" style="white-space:nowrap;">Dupliquer</button>
+          </form>
+        {% endif %}
       </div>
     {% endfor %}
   {% else %}

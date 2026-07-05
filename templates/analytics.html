@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Analytics — LevelUp{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h2>Jours actifs (90 derniers jours)</h2>
+  <div style="display:flex; flex-wrap:wrap; gap:3px;">
+    {% for day in heatmap %}
+      {% set intensity = 'var(--panel-border)' if day.count == 0 else
+                         'rgba(201,162,39,0.35)' if day.count == 1 else
+                         'rgba(201,162,39,0.6)' if day.count <= 3 else
+                         'var(--accent)' %}
+      <div title="{{ day.date }} — {{ day.count }} quête(s)"
+           style="width:12px; height:12px; border-radius:2px; background:{{ intensity }};"></div>
+    {% endfor %}
+  </div>
+  <p class="muted" style="margin-top:8px; font-size:12px;">Plus la case est claire, moins il y a eu d'activité ce jour-là.</p>
+</div>
+
+<div class="card">
+  <h2>Jalons cochés dans le temps (cumul)</h2>
+  {% if jalons %}
+    <canvas id="jalonsChart" height="180"></canvas>
+  {% else %}
+    <p class="muted">Aucun jalon coché pour l'instant.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Évolution (30 derniers jours)</h2>
+  {% if snapshots %}
+    <canvas id="snapshotChart" height="220"></canvas>
+  {% else %}
+    <p class="muted">
+      Pas encore d'historique — le premier instantané sera capturé cette nuit à minuit.
+      Reviens dans quelques jours pour voir la courbe se dessiner.
+    </p>
+  {% endif %}
+</div>
+
+{% if jalons or snapshots %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+  const gridColor = 'rgba(139,147,158,0.15)';
+  const textColor = '#8b939e';
+
+  {% if jalons %}
+  new Chart(document.getElementById('jalonsChart'), {
+    type: 'line',
+    data: {
+      labels: {{ jalons | map(attribute='date') | list | tojson }},
+      datasets: [{
+        label: 'Jalons cochés (cumul)',
+        data: {{ jalons | map(attribute='total') | list | tojson }},
+        borderColor: '#c9a227',
+        backgroundColor: 'rgba(201,162,39,0.1)',
+        fill: true,
+        tension: 0.2,
+      }]
+    },
+    options: {
+      scales: {
+        x: { ticks: { color: textColor }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor }, grid: { color: gridColor }, beginAtZero: true }
+      },
+      plugins: { legend: { labels: { color: textColor } } }
+    }
+  });
+  {% endif %}
+
+  {% if snapshots %}
+  new Chart(document.getElementById('snapshotChart'), {
+    type: 'line',
+    data: {
+      labels: {{ snapshots | map(attribute='date') | list | tojson }},
+      datasets: [
+        { label: 'Discipline (7j)', data: {{ snapshots | map(attribute='discipline_score') | list | tojson }}, borderColor: '#4a8a7e', tension: 0.2 },
+        { label: 'Score de vie', data: {{ snapshots | map(attribute='life_score_global') | list | tojson }}, borderColor: '#c9a227', tension: 0.2 },
+        { label: 'Fatigue', data: {{ snapshots | map(attribute='fatigue') | list | tojson }}, borderColor: '#b5533c', tension: 0.2 },
+        { label: 'Momentum', data: {{ snapshots | map(attribute='momentum') | list | tojson }}, borderColor: '#8b939e', tension: 0.2 }
+      ]
+    },
+    options: {
+      scales: {
+        x: { ticks: { color: textColor }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor }, grid: { color: gridColor } }
+      },
+      plugins: { legend: { labels: { color: textColor } } }
+    }
+  });
+  {% endif %}
+</script>
+{% endif %}
+
+{% endblock %}

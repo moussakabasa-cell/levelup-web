@@ -13,11 +13,13 @@ def create_app():
     from routes.quests import bp as quests_bp
     from routes.parcours import bp as parcours_bp
     from routes.daily_core import bp as daily_core_bp
+    from routes.analytics import bp as analytics_bp
 
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(quests_bp)
     app.register_blueprint(parcours_bp)
     app.register_blueprint(daily_core_bp)
+    app.register_blueprint(analytics_bp)
 
     with app.app_context():
         # Crée les tables manquantes seulement — ne touche pas aux données

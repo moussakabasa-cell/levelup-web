@@ -190,6 +190,27 @@ class Foundation(db.Model):
     PENDING = 0
     DONE = 1
     SKIPPED = 2
+    
+    
+# ============================================================
+#   ANALYTICS — instantané quotidien pour les courbes d'évolution
+# ============================================================
+
+class DailySnapshot(db.Model):
+    """Capturé une fois par jour par le scheduler (minuit), avant reset.
+    Permet de tracer fatigue/momentum/discipline/score de vie dans le temps
+    — impossible de reconstruire le passé, ça s'accumule à partir de
+    la première capture."""
+    __tablename__ = "daily_snapshots"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    date = db.Column(db.Text, unique=True, nullable=False)   # YYYY-MM-DD
+    fatigue = db.Column(db.Integer)
+    momentum = db.Column(db.Integer)
+    streak = db.Column(db.Integer)
+    daily_core_score = db.Column(db.Integer)
+    life_score_global = db.Column(db.Integer)
+    discipline_score = db.Column(db.Integer)
 
 
 # ============================================================

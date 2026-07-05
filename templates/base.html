@@ -165,7 +165,7 @@
   <a href="{{ url_for('daily_core.index') }}" class="{{ 'active' if active=='daily_core' }}">Fondations</a>
   <a href="{{ url_for('quests.index') }}" class="{{ 'active' if active=='quests' }}">Quêtes</a>
   <a href="{{ url_for('parcours.index') }}" class="{{ 'active' if active=='parcours' }}">Parcours</a>
-</nav>
+  <a href="{{ url_for('analytics.index') }}" class="{{ 'active' if active=='analytics' }}">Analytics</a></nav>
 <script>
 document.addEventListener('submit', function(e) {
   const form = e.target;

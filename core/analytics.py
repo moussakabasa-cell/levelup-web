@@ -7,7 +7,8 @@ Prépare les données pour la page /analytics.
 - jalons_timeline : cumul de jalons cochés dans le temps — utilisable
   immédiatement (basé sur Jalon.checked_date).
 - snapshot_series : fatigue/momentum/discipline/score de vie dans le temps
-  — vide tant que le scheduler n'a pas capturé au moins un jour.
+  — vide tant que le scheduler n'a pas capturé au moins un jour (voir
+  scheduler.py : capture_daily_snapshot).
 """
 from datetime import date, timedelta
 from collections import defaultdict
@@ -26,6 +27,7 @@ def heatmap_completions(days: int = 90) -> dict:
     for (d,) in rows:
         counts[d] += 1
 
+    # grille complète jour par jour (même les jours à 0, pour la heatmap)
     result = []
     for i in range(days, -1, -1):
         d = (date.today() - timedelta(days=i)).isoformat()

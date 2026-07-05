@@ -190,8 +190,8 @@ class Foundation(db.Model):
     PENDING = 0
     DONE = 1
     SKIPPED = 2
-    
-    
+
+
 # ============================================================
 #   ANALYTICS — instantané quotidien pour les courbes d'évolution
 # ============================================================

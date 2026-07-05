@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "macros.html" import jalon_icon %}
 {% block title %}{{ p.title }} — Parcours{% endblock %}
 {% block content %}
 
@@ -15,10 +16,14 @@
   {% if p.category %}
   <div class="stat-row"><span class="label">Catégorie</span><span>{{ p.category }}</span></div>
   {% endif %}
-  <div class="progress-track">
-    <div class="progress-fill" style="width: {{ (p.checked_jalon_count() / p.jalon_count() * 100) if p.jalon_count() > 0 else 0 }}%"></div>
-  </div>
-  <p class="muted" style="margin-top:6px;">{{ p.checked_jalon_count() }}/{{ p.jalon_count() }} jalons cochés</p>
+  {% if p.jalon_count() > 0 %}
+    <div class="jalon-frieze" style="margin-top:10px;">
+      {% for j in p.jalons %}
+        {{ jalon_icon(checked=j.checked, size=16) }}
+      {% endfor %}
+    </div>
+  {% endif %}
+  <p class="muted" style="margin-top:8px;">{{ p.checked_jalon_count() }}/{{ p.jalon_count() }} jalons cochés</p>
   {% if p.jalon_count() > 0 and p.checked_jalon_count() == p.jalon_count() %}
     <div class="alert-box" style="border-left-color: var(--stamp); background: rgba(184,135,58,0.1);">
       🎉 Tous les jalons sont cochés — parcours complété !
@@ -32,7 +37,7 @@
     {% for j in p.jalons %}
       <div class="list-item" style="flex-direction: column; align-items: stretch;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span><span class="jalon-check {{ 'checked' if j.checked }}">{{ '✓' if j.checked }}</span>{{ j.title }}</span>
+          <span>{{ jalon_icon(checked=j.checked, size=16) }} {{ j.title }}</span>
           <span>
             {% if j.checked %}
               <form class="inline" method="post" action="{{ url_for('parcours.uncheck_jalon', parcours_id=p.id, jalon_id=j.id) }}">

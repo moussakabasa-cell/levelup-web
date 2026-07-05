@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{% block title %}LevelUp{% endblock %}</title>
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
@@ -42,6 +43,9 @@
     letter-spacing: 0.04em;
     color: var(--text-dim);
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   header.top .brand strong { color: var(--stamp); font-weight: 600; }
   main { padding: 16px; max-width: 640px; margin: 0 auto; }
@@ -156,26 +160,30 @@
   }
   .progress-fill { height: 100%; background: var(--stamp); transition: width 0.4s ease; }
 
-  /* case à cocher façon formulaire papier — le jalon, élément signature */
-  .jalon-check {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border: 1.5px solid var(--text-dim);
-    border-radius: 3px;
-    margin-right: 8px;
-    font-family: var(--mono);
-    font-size: 13px;
-    flex-shrink: 0;
+  /* icône jalon — le motif central de toute l'identité LevelUp */
+  .jalon-icon {
+    fill: none;
+    stroke: var(--text-dim);
+    stroke-width: 2;
     vertical-align: middle;
+    flex-shrink: 0;
   }
-  .jalon-check.checked {
-    border-color: var(--stamp);
-    background: rgba(184,135,58,0.14);
-    color: var(--stamp);
-    font-weight: 700;
+  .jalon-icon.checked {
+    fill: var(--stamp);
+    stroke: var(--stamp);
+  }
+  .jalon-frieze {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .jalon-frieze .overflow {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-left: 2px;
   }
 
   .empty-state {
@@ -211,8 +219,9 @@
 </style>
 </head>
 <body>
+{% from "macros.html" import jalon_icon %}
 <header class="top">
-  <div class="brand"><strong>LEVEL</strong>UP — tracker la réalité, pas simuler un jeu</div>
+  <div class="brand">{{ jalon_icon(checked=True, size=18) }} <strong>LEVEL</strong>UP — tracker la réalité, pas simuler un jeu</div>
 </header>
 <main>
   {% with messages = get_flashed_messages() %}

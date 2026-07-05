@@ -38,6 +38,8 @@ def create_app():
     app.register_blueprint(analytics_bp)
 
     with app.app_context():
+        # Crée les tables manquantes seulement — ne touche pas aux données
+        # existantes si tu importes ton skills.db actuel.
         db.create_all()
 
     from scheduler import init_scheduler

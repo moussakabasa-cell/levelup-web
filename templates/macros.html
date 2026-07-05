@@ -1,0 +1,7 @@
+{% macro jalon_icon(checked=False, size=16, extra_class='') %}
+<svg class="jalon-icon {{ 'checked' if checked }} {{ extra_class }}"
+     width="{{ size }}" height="{{ (size * 1.33)|round|int }}"
+     viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
+  <path d="M6 11 A6 6 0 0 1 18 11 L18 26 A2 2 0 0 1 16 28 L8 28 A2 2 0 0 1 6 26 Z"/>
+</svg>
+{% endmacro %}

@@ -74,10 +74,26 @@
     data: {
       labels: {{ snapshots | map(attribute='date') | list | tojson }},
       datasets: [
-        { label: 'Discipline (7j)', data: {{ snapshots | map(attribute='discipline_score') | list | tojson }}, borderColor: '#4a8a7e', tension: 0.2 },
-        { label: 'Score de vie', data: {{ snapshots | map(attribute='life_score_global') | list | tojson }}, borderColor: '#c9a227', tension: 0.2 },
-        { label: 'Fatigue', data: {{ snapshots | map(attribute='fatigue') | list | tojson }}, borderColor: '#b5533c', tension: 0.2 },
-        { label: 'Momentum', data: {{ snapshots | map(attribute='momentum') | list | tojson }}, borderColor: '#8b939e', tension: 0.2 }
+        {
+          label: 'Discipline (7j)',
+          data: {{ snapshots | map(attribute='discipline_score') | list | tojson }},
+          borderColor: '#4a8a7e', tension: 0.2,
+        },
+        {
+          label: 'Score de vie',
+          data: {{ snapshots | map(attribute='life_score_global') | list | tojson }},
+          borderColor: '#c9a227', tension: 0.2,
+        },
+        {
+          label: 'Fatigue',
+          data: {{ snapshots | map(attribute='fatigue') | list | tojson }},
+          borderColor: '#b5533c', tension: 0.2,
+        },
+        {
+          label: 'Momentum',
+          data: {{ snapshots | map(attribute='momentum') | list | tojson }},
+          borderColor: '#8b939e', tension: 0.2,
+        }
       ]
     },
     options: {

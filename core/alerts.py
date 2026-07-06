@@ -55,4 +55,31 @@ def build_alerts() -> list[str]:
             f"Jalon \"{j.title}\" — {item['count']} séances comptées. Prêt à cocher ?"
         )
 
+    # Quêtes ponctuelles avec deadline dépassée et jamais complétées
+    from datetime import date
+    from models import Quest
+    today = date.today().isoformat()
+    overdue_quests = Quest.query.filter(
+        Quest.type == "PONCTUELLE",
+        Quest.status == Quest.STATUS_AVAILABLE,
+        Quest.deadline.isnot(None),
+        Quest.deadline < today,
+    ).all()
+    if overdue_quests:
+        if len(overdue_quests) == 1:
+            q = overdue_quests[0]
+            alerts.append(f"Quête ponctuelle en retard : \"{q.title}\" (échéance {q.deadline})")
+        else:
+            titles = ", ".join(f'"{q.title}"' for q in overdue_quests[:3])
+            more = f" et {len(overdue_quests) - 3} autre(s)" if len(overdue_quests) > 3 else ""
+            alerts.append(f"{len(overdue_quests)} quêtes ponctuelles en retard : {titles}{more}")
+
+    # Parcours avec deadline dépassée et non complétés
+    parcours_core.refresh_all()  # s'assurer que les statuts sont à jour
+    overdue_parcours = Parcours.query.filter(
+        Parcours.status == Parcours.EN_RETARD,
+    ).all()
+    for p in overdue_parcours:
+        alerts.append(f"Parcours en retard : \"{p.title}\" (échéance {p.deadline})")
+
     return alerts

@@ -1,0 +1,24 @@
+{
+  "name": "LevelUp",
+  "short_name": "LevelUp",
+  "description": "Tracker la réalité, pas simuler un jeu.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#14161a",
+  "theme_color": "#b8873a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

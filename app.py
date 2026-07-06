@@ -16,6 +16,10 @@ def create_app():
 
     @app.before_request
     def require_auth():
+        # Les fichiers statiques (manifest PWA, icônes, service worker) doivent
+        # être accessibles sans auth, sinon la PWA ne s'installe pas.
+        if request.path.startswith("/static/"):
+            return None
         auth = request.authorization
         if not auth or not check_auth(auth.username, auth.password):
             return Response(
@@ -30,12 +34,14 @@ def create_app():
     from routes.parcours import bp as parcours_bp
     from routes.daily_core import bp as daily_core_bp
     from routes.analytics import bp as analytics_bp
+    from routes.backup import bp as backup_bp
 
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(quests_bp)
     app.register_blueprint(parcours_bp)
     app.register_blueprint(daily_core_bp)
     app.register_blueprint(analytics_bp)
+    app.register_blueprint(backup_bp)
 
     with app.app_context():
         # Crée les tables manquantes seulement — ne touche pas aux données

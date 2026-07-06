@@ -11,9 +11,11 @@ def index():
     snapshots = analytics.snapshot_series(days=30)
     foundation_rates = analytics.foundation_validation_rates(days=30)
     categories = analytics.quests_by_category(days=30)
+    jalon_dist = analytics.jalon_distribution_per_daily_quest(days=30)
 
     return render_template(
         "analytics.html", active="analytics",
         heatmap=heatmap, jalons=jalons, snapshots=snapshots,
         foundation_rates=foundation_rates, categories=categories,
+        jalon_dist=jalon_dist,
     )

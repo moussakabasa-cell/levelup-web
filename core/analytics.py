@@ -102,6 +102,48 @@ def foundation_validation_rates(days: int = 30) -> list:
     return result
 
 
+def jalon_distribution_per_daily_quest(days: int = 30) -> list:
+    """Pour chaque quête DAILY, montre la répartition des jalons choisis
+    au moment des complétions sur N jours. Révèle si tu équilibres ou
+    négliges certains jalons quand une quête générique peut pointer vers
+    plusieurs. Ignore les quêtes DAILY sans aucune complétion catégorisée."""
+    from models import Quest, Jalon
+
+    since = (date.today() - timedelta(days=days)).isoformat()
+
+    result = []
+    for q in Quest.query.filter_by(type="DAILY").all():
+        rows = (
+            db.session.query(QuestCompletion.jalon_id, db.func.count(QuestCompletion.id))
+            .filter(
+                QuestCompletion.quest_id == q.id,
+                QuestCompletion.completed_date >= since,
+                QuestCompletion.jalon_id.isnot(None),
+            )
+            .group_by(QuestCompletion.jalon_id)
+            .all()
+        )
+        if not rows:
+            continue
+
+        distribution = []
+        for jalon_id, count in rows:
+            jalon = Jalon.query.get(jalon_id)
+            if jalon:
+                distribution.append({
+                    "jalon_title": jalon.title,
+                    "parcours_title": jalon.parcours.title if jalon.parcours else "?",
+                    "count": count,
+                })
+        # trier du plus au moins fréquent
+        distribution.sort(key=lambda x: x["count"], reverse=True)
+        result.append({
+            "quest_title": q.title,
+            "distribution": distribution,
+        })
+    return result
+
+
 def quests_by_category(days: int = 30) -> list:
     """Quêtes complétées par catégorie de parcours sur N jours — un seul
     graphique en barres, pas un par catégorie."""

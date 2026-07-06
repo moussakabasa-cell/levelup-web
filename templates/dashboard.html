@@ -96,6 +96,14 @@
       <p><strong style="color:var(--stamp);">Parcours</strong> — un domaine que tu suis dans la durée : avec deadline (projet borné) ou sans (compétence continue). Chaque parcours contient des <strong style="color:var(--stamp);">jalons</strong> — étapes concrètes que tu coches toi-même, jamais automatiquement.</p>
       <p>Compléter une quête liée à un jalon ne le coche pas tout seul — c'est toi qui décides si c'est vraiment acquis. La validation reste consciente.</p>
       <p><strong style="color:var(--stamp);">Analytics</strong> — regarde en arrière : jours actifs, jalons cochés, évolution.</p>
+      <p style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--panel-border); font-size: 13px;">
+        <strong style="color:var(--stamp);">Profil déduit</strong> — règle simple : streak ≥ 7 jours = <em>régulier</em> ; streak < 3 = <em>irrégulier</em> ; sinon, <em>équilibré</em> si tu touches à plusieurs parcours cette semaine, <em>dominance systèmes</em> si tu es concentré sur un seul.
+      </p>
+      <p style="margin-top: 18px; padding-top: 12px; border-top: 1px dashed var(--panel-border); font-size: 13px;">
+        <a href="{{ url_for('backup.export_all') }}" style="color: var(--text-dim);">
+          Télécharger une sauvegarde JSON de toutes tes données →
+        </a>
+      </p>
     </div>
   </details>
 </div>

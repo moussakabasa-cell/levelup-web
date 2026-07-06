@@ -64,6 +64,33 @@
 </div>
 
 <div class="card">
+  <h2>Répartition des jalons par quête DAILY (30 jours)</h2>
+  {% if jalon_dist %}
+    <p class="muted" style="font-size: 13px; margin: 0 0 12px;">
+      Pour chaque quête générique, où va vraiment le temps.
+    </p>
+    {% for entry in jalon_dist %}
+      <div style="margin-bottom: 14px;">
+        <div style="font-weight: 600; font-size: 14px; margin-bottom: 6px;">{{ entry.quest_title }}</div>
+        {% set total = entry.distribution|sum(attribute='count') %}
+        {% for d in entry.distribution %}
+          {% set pct = (d.count / total * 100)|round|int %}
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 3px;">
+            <span class="muted">{{ d.parcours_title }} → {{ d.jalon_title }}</span>
+            <span style="font-family: var(--mono); font-size: 12px;">{{ d.count }} ({{ pct }}%)</span>
+          </div>
+          <div class="progress-track" style="height: 4px; margin-bottom: 6px;">
+            <div class="progress-fill" style="width: {{ pct }}%;"></div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">Pas encore de complétion de quête DAILY liée à un jalon. Choisis un jalon au moment de compléter tes quêtes pour voir la répartition.</div>
+  {% endif %}
+</div>
+
+<div class="card">
   <h2>Quêtes complétées par catégorie (30 derniers jours)</h2>
   {% if categories %}
     {% set top = categories|max(attribute='count') %}
